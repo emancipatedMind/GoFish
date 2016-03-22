@@ -32,9 +32,9 @@
             this.textName = new System.Windows.Forms.TextBox();
             this.buttonStart = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.textProgress = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.textBooks = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
             this.listHand = new System.Windows.Forms.ListBox();
             this.buttonAsk = new System.Windows.Forms.Button();
@@ -75,15 +75,15 @@
             this.label2.TabIndex = 0;
             this.label2.Text = "Game progress";
             // 
-            // textBox1
+            // textProgress
             // 
-            this.textBox1.Location = new System.Drawing.Point(15, 92);
-            this.textBox1.Multiline = true;
-            this.textBox1.Name = "textBox1";
-            this.textBox1.ReadOnly = true;
-            this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox1.Size = new System.Drawing.Size(395, 348);
-            this.textBox1.TabIndex = 3;
+            this.textProgress.Location = new System.Drawing.Point(15, 92);
+            this.textProgress.Multiline = true;
+            this.textProgress.Name = "textProgress";
+            this.textProgress.ReadOnly = true;
+            this.textProgress.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textProgress.Size = new System.Drawing.Size(395, 348);
+            this.textProgress.TabIndex = 3;
             // 
             // label3
             // 
@@ -94,15 +94,15 @@
             this.label3.TabIndex = 0;
             this.label3.Text = "Books";
             // 
-            // textBox2
+            // textBooks
             // 
-            this.textBox2.Location = new System.Drawing.Point(15, 460);
-            this.textBox2.Multiline = true;
-            this.textBox2.Name = "textBox2";
-            this.textBox2.ReadOnly = true;
-            this.textBox2.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox2.Size = new System.Drawing.Size(395, 86);
-            this.textBox2.TabIndex = 3;
+            this.textBooks.Location = new System.Drawing.Point(15, 460);
+            this.textBooks.Multiline = true;
+            this.textBooks.Name = "textBooks";
+            this.textBooks.ReadOnly = true;
+            this.textBooks.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.textBooks.Size = new System.Drawing.Size(395, 86);
+            this.textBooks.TabIndex = 3;
             // 
             // label4
             // 
@@ -138,8 +138,8 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(577, 562);
             this.Controls.Add(this.listHand);
-            this.Controls.Add(this.textBox2);
-            this.Controls.Add(this.textBox1);
+            this.Controls.Add(this.textBooks);
+            this.Controls.Add(this.textProgress);
             this.Controls.Add(this.buttonAsk);
             this.Controls.Add(this.buttonStart);
             this.Controls.Add(this.textName);
@@ -161,9 +161,9 @@
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.ListBox listHand;
         private System.Windows.Forms.Button buttonAsk;
-        private System.Windows.Forms.TextBox textBox2;
+        private System.Windows.Forms.TextBox textBooks;
         private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox textProgress;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.TextBox textName;
         private System.Windows.Forms.Label label1;
