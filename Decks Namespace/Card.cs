@@ -2,16 +2,20 @@ using System;
 
 namespace Decks {
     class Card {
-        public Suits Suit { get; set; }
-        public Values Value { get; set; }
+
+        private Suits suit;
+        private Values value;
+
+        public Suits Suit { get { return suit; } }
+        public Values Value { get { return value; } }
 
         public string Name {
             get { return Value.ToString() + " of " + Suit.ToString(); }
         } 
 
         public Card(Suits suit, Values value) {
-            Suit = suit;
-            Value = value;
+            this.suit = suit;
+            this.value = value;
         }
 
         public override string ToString() {
