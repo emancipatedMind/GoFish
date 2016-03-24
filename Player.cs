@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using System.Windows.Controls;
 using Decks;
 
 namespace GoFish {
@@ -13,17 +13,17 @@ namespace GoFish {
         private Deck cards = new Deck(new Card[] { });
         private Random random;
         private string name;
-        private TextBox textBoxOnForm;
+        private ScrollViewer textBoxOnForm;
 
         public string Name { get { return name; } }
         public int CardCount { get { return cards.Count; } }
 
-        public Player(string name, TextBox textBoxOnForm, Random random) {
+        public Player(string name, ScrollViewer textBoxOnForm, Random random) {
             this.name = name;
             this.textBoxOnForm = textBoxOnForm;
             this.random = random;
 
-            this.textBoxOnForm.Text += name + " has just joined the game" + Environment.NewLine;
+            this.textBoxOnForm.Content += name + " has just joined the game" + Environment.NewLine;
         }
 
         public IEnumerable<Values> PullOutBooks() {
@@ -46,7 +46,7 @@ namespace GoFish {
 
         public Deck DoYouHaveAny(Values value) {
             Deck deckOfValues = cards.PullOutValues(value);
-            textBoxOnForm.Text += String.Format("{0} has {1} {2}{3}", Name, deckOfValues.Count, Card.Plural(value), Environment.NewLine);
+            textBoxOnForm.Content += String.Format("{0} has {1} {2}{3}", Name, deckOfValues.Count, Card.Plural(value), Environment.NewLine);
             return deckOfValues;
         }
 
@@ -60,7 +60,7 @@ namespace GoFish {
         }
 
         public void AskForACard(List<Player> players, int myIndex, Deck stock, Values value) {
-            textBoxOnForm.Text += Name + " asks if anyone has a " + value + Environment.NewLine;
+            textBoxOnForm.Content += Name + " asks if anyone has a " + value + Environment.NewLine;
             int totalCardsGiven = 0;
             for (int i = 0; i < players.Count; i++) {
                 if (i != myIndex) {
@@ -71,7 +71,7 @@ namespace GoFish {
                 }
             }
             if (totalCardsGiven == 0 && stock.Count > 0) {
-                textBoxOnForm.Text += Name + " must draw from the stock." + Environment.NewLine;
+                textBoxOnForm.Content += Name + " must draw from the stock." + Environment.NewLine;
                 cards.Add(stock.Deal());
             }
         }

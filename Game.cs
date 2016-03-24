@@ -4,16 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Decks;
-using System.Windows.Forms;
+using System.Windows.Controls;
 
 namespace GoFish {
     class Game {
         private List<Player> players;
         private Dictionary<Values, Player> books;
         private Deck stock;
-        private TextBox textBoxOnForm;
+        private ScrollViewer textBoxOnForm;
 
-        public Game(string playerName, IEnumerable<string> opponentNames, TextBox textBoxOnForm) {
+        public Game(string playerName, IEnumerable<string> opponentNames, ScrollViewer textBoxOnForm) {
             Random random = new Random();
             this.textBoxOnForm = textBoxOnForm;
             players = new List<Player>();
@@ -40,7 +40,7 @@ namespace GoFish {
                 if (i == 0) players[0].AskForACard(players, 0, stock, cardToAskFor);
                 else players[i].AskForACard(players, i, stock);
                 if (PullOutBooks(players[i])) {
-                    textBoxOnForm.Text += players[i].Name + " drew a new hand" + Environment.NewLine;
+                    textBoxOnForm.Content += players[i].Name + " drew a new hand" + Environment.NewLine;
                     int card = 1;
                     while (card <=5 && stock.Count > 0) {
                         players[i].TakeCard(stock.Deal());
@@ -49,7 +49,7 @@ namespace GoFish {
                 }
                 players[0].SortHand();
                 if (stock.Count == 0) {
-                    textBoxOnForm.Text += "The stock is out of cards. Game over!" + Environment.NewLine;
+                    textBoxOnForm.Content += "The stock is out of cards. Game over!" + Environment.NewLine;
                     return true;
                 }
             }
