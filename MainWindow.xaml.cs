@@ -18,48 +18,29 @@ namespace GoFish {
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window {
+
+        Game game;
+
         public MainWindow() {
             InitializeComponent();
+            game = FindResource("game") as Game;
         }
-
-        private Game game;
 
         private void buttonStart_Click(object sender, RoutedEventArgs e) {
             if(String.IsNullOrEmpty(textName.Text)) {
                 MessageBox.Show("Please enter your name", "Can't start the game yet");
                 return;
             }
-            textProgress.Content = String.Empty;
-            game = new Game(textName.Text, new List<string> { "Joe", "Bob" }, textProgress);
-            buttonStart.IsEnabled = false;
-            textName.IsEnabled = false;
-            buttonAsk.IsEnabled = true;
-            listHand.IsEnabled = true;
-            UpdateForm(false);
-        }
-
-        private void UpdateForm(bool skipDescribePlayerHands) {
-            listHand.Items.Clear();
-            foreach (String cardName in game.GetPlayerCardNames()) listHand.Items.Add(cardName);
-            textBooks.Content = game.DescribeBooks();
-            textProgress.Content += "------------------------------------------------------------" + Environment.NewLine;
-            if (!skipDescribePlayerHands) textProgress.Content += game.DescribePlayerHands();
+            game.StartGame();
         }
 
         private void buttonAsk_Click(object sender, RoutedEventArgs e) {
-            textProgress.Content = "";
             if (listHand.SelectedIndex < 0) {
                 MessageBox.Show("Please select a card");
                 return;
             }
-            bool winnerFound = game.PlayOneRound(listHand.SelectedIndex);
-            UpdateForm(winnerFound);
-            if (winnerFound) {
-                textProgress.Content += "The winner is... " + game.GetWinnerName();
-                buttonAsk.IsEnabled = false;
-                listHand.IsEnabled = false;
-                buttonStart.IsEnabled = true;
-            }
+            game.PlayOneRound(listHand.SelectedIndex);
         }
+
     }
 }

@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Decks;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Controls;
-using Decks;
 
 namespace GoFish {
     class Player {
@@ -13,17 +14,17 @@ namespace GoFish {
         private Deck cards = new Deck(new Card[] { });
         private Random random;
         private string name;
-        private ScrollViewer textBoxOnForm;
+        private Game mainGame;
 
         public string Name { get { return name; } }
         public int CardCount { get { return cards.Count; } }
 
-        public Player(string name, ScrollViewer textBoxOnForm, Random random) {
+        public Player(string name, Random random, Game mainGame) {
             this.name = name;
-            this.textBoxOnForm = textBoxOnForm;
             this.random = random;
+            this.mainGame = mainGame;
 
-            this.textBoxOnForm.Content += name + " has just joined the game" + Environment.NewLine;
+            mainGame.AddProgress(Name + " has just joined the game");
         }
 
         public IEnumerable<Values> PullOutBooks() {
@@ -46,7 +47,7 @@ namespace GoFish {
 
         public Deck DoYouHaveAny(Values value) {
             Deck deckOfValues = cards.PullOutValues(value);
-            textBoxOnForm.Content += String.Format("{0} has {1} {2}{3}", Name, deckOfValues.Count, Card.Plural(value), Environment.NewLine);
+            mainGame.AddProgress(String.Format("{0} has {1} {2}", Name, deckOfValues.Count, Card.Plural(value)));
             return deckOfValues;
         }
 
@@ -60,7 +61,7 @@ namespace GoFish {
         }
 
         public void AskForACard(List<Player> players, int myIndex, Deck stock, Values value) {
-            textBoxOnForm.Content += Name + " asks if anyone has a " + value + Environment.NewLine;
+            mainGame.AddProgress(Name + " asks if anyone has a " + value);
             int totalCardsGiven = 0;
             for (int i = 0; i < players.Count; i++) {
                 if (i != myIndex) {
@@ -71,7 +72,7 @@ namespace GoFish {
                 }
             }
             if (totalCardsGiven == 0 && stock.Count > 0) {
-                textBoxOnForm.Content += Name + " must draw from the stock." + Environment.NewLine;
+                mainGame.AddProgress(Name + " must draw from the stock.");
                 cards.Add(stock.Deal());
             }
         }

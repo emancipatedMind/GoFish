@@ -1,28 +1,49 @@
-﻿using System;
+﻿using Decks;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Decks;
-using System.Windows.Controls;
 
 namespace GoFish {
-    class Game {
+    class Game : INotifyPropertyChanged {
         private List<Player> players;
         private Dictionary<Values, Player> books;
         private Deck stock;
-        private ScrollViewer textBoxOnForm;
 
-        public Game(string playerName, IEnumerable<string> opponentNames, ScrollViewer textBoxOnForm) {
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public bool GameInProgress { get; private set; }
+        public bool GameNotStarted { get { return !GameInProgress; } }
+        public string PlayerName { get; set; }
+        public ObservableCollection<string> Hand { get; private set; }
+        public string Books { get { return DescribeBooks(); } }
+        public string GameProgress { get; private set; }
+
+        public Game() {
+            PlayerName = "Peter";
+            Hand = new ObservableCollection<string>();
+            ResetGame();
+        }
+
+        public void StartGame() {
+            ClearProgress();
+            GameInProgress = true;
+            OnPropertyChanged("GameInProgress");
+            OnPropertyChanged("GameNotStarted");
             Random random = new Random();
-            this.textBoxOnForm = textBoxOnForm;
             players = new List<Player>();
-            players.Add(new Player(playerName, textBoxOnForm, random));
-            foreach (string player in opponentNames) players.Add(new Player(player, textBoxOnForm, random));
-            books = new Dictionary<Values, Player>();
-            stock = new Deck();
+            players.Add(new Player(PlayerName, random, this));
+            players.Add(new Player("Bob", random, this));
+            players.Add(new Player("Joe", random, this));
             Deal();
             players[0].SortHand();
+            Hand.Clear();
+            foreach (string cardName in GetPlayerCardNames()) Hand.Add(cardName);
+            if (GameNotStarted) AddProgress(DescribePlayerHands()); 
+            OnPropertyChanged("Books");
         }
 
         private void Deal() {
@@ -33,27 +54,30 @@ namespace GoFish {
             foreach (Player player in players) PullOutBooks(player);
         }
 
-        public bool PlayOneRound(int selectedPlayerCard) {
+        public void PlayOneRound(int selectedPlayerCard) {
             Values cardToAskFor = players[0].Peek(selectedPlayerCard).Value;
-            for (int i = 0; i < players.Count; i++)
-            {
+            for (int i = 0; i < players.Count; i++) {
                 if (i == 0) players[0].AskForACard(players, 0, stock, cardToAskFor);
                 else players[i].AskForACard(players, i, stock);
                 if (PullOutBooks(players[i])) {
-                    textBoxOnForm.Content += players[i].Name + " drew a new hand" + Environment.NewLine;
+                    AddProgress(players[i].Name + " drew a new hand" + Environment.NewLine);
                     int card = 1;
                     while (card <=5 && stock.Count > 0) {
                         players[i].TakeCard(stock.Deal());
                         card++;
                     } 
                 }
+                OnPropertyChanged("Books"); 
                 players[0].SortHand();
                 if (stock.Count == 0) {
-                    textBoxOnForm.Content += "The stock is out of cards. Game over!" + Environment.NewLine;
-                    return true;
+                    AddProgress("The stock is out of cards. Game over!" + Environment.NewLine);
+                    AddProgress("The winner is... " + GetWinnerName());
+                    ResetGame();
                 }
             }
-            return false;
+            Hand.Clear();
+            foreach (string cardName in GetPlayerCardNames()) Hand.Add(cardName);
+            if (GameNotStarted) AddProgress(DescribePlayerHands());
         }
 
         public bool PullOutBooks(Player player) {
@@ -103,11 +127,35 @@ namespace GoFish {
             string description = "";
             for (int i = 0; i < players.Count; i++) {
                 description += players[i].Name + " has " + players[i].CardCount;
-                if (players[i].CardCount == 1) description += " card." + Environment.NewLine;
-                else description += " cards." + Environment.NewLine;
+                if (players[i].CardCount == 1) description += " card.";
+                else description += " cards.";
             }
             description += "The stock has " + stock.Count + " cards left.";
             return description;
+        }
+
+        public void AddProgress(string progress) {
+            GameProgress = progress + Environment.NewLine + GameProgress;
+            OnPropertyChanged("GameProgress");
+        }
+
+        public void ClearProgress() {
+            GameProgress = String.Empty;
+            OnPropertyChanged("GameProgress"); 
+        }
+
+        public void ResetGame() {
+            GameInProgress = false;
+            OnPropertyChanged("GameInProgress"); 
+            OnPropertyChanged("GameNotStarted");
+            books = new Dictionary<Values, Player>();
+            stock = new Deck();
+            Hand.Clear();
+        }
+        
+        private void OnPropertyChanged(string propertyChanged) {
+            PropertyChangedEventHandler propertyChangedHandler = PropertyChanged;
+            if (propertyChangedHandler != null) propertyChangedHandler(this, new PropertyChangedEventArgs(propertyChanged) );
         }
     }
 }
