@@ -12,6 +12,7 @@ namespace GoFish {
         private List<Player> players;
         private Dictionary<Values, Player> books;
         private Deck stock;
+        private int roundNumber;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -55,6 +56,8 @@ namespace GoFish {
         }
 
         public void PlayOneRound(int selectedPlayerCard) {
+            AddProgress(String.Format("Hand #{0} ----------------------------------------- ", roundNumber));
+            roundNumber++;
             Values cardToAskFor = players[0].Peek(selectedPlayerCard).Value;
             for (int i = 0; i < players.Count; i++) {
                 if (i == 0) players[0].AskForACard(players, 0, stock, cardToAskFor);
@@ -70,11 +73,13 @@ namespace GoFish {
                 OnPropertyChanged("Books"); 
                 players[0].SortHand();
                 if (stock.Count == 0) {
-                    AddProgress("The stock is out of cards. Game over!" + Environment.NewLine);
+                    AddProgress("The stock is out of cards. Game over!");
                     AddProgress("The winner is... " + GetWinnerName());
                     ResetGame();
+                    return;
                 }
             }
+            AddProgress(String.Format("The stock currently has {0} {1}.", stock.Count, (stock.Count == 1 ? "card" : "cards")));
             Hand.Clear();
             foreach (string cardName in GetPlayerCardNames()) Hand.Add(cardName);
             if (GameNotStarted) AddProgress(DescribePlayerHands());
@@ -145,6 +150,7 @@ namespace GoFish {
         }
 
         public void ResetGame() {
+            roundNumber = 1;
             GameInProgress = false;
             OnPropertyChanged("GameInProgress"); 
             OnPropertyChanged("GameNotStarted");

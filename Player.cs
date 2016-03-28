@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 namespace GoFish {
     class Player {
 
-
         private Deck cards = new Deck(new Card[] { });
         private Random random;
         private string name;
