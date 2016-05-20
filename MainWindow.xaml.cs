@@ -20,6 +20,7 @@ namespace GoFish {
     public partial class MainWindow : Window {
 
         Game game;
+        Random rnd = new Random();
 
         public MainWindow() {
             InitializeComponent();
@@ -36,8 +37,7 @@ namespace GoFish {
 
         private void buttonAsk_Click(object sender, RoutedEventArgs e) {
             if (listHand.SelectedIndex < 0) {
-                MessageBox.Show("Please select a card");
-                return;
+                listHand.SelectedIndex = rnd.Next(listHand.Items.Count);
             }
             game.PlayOneRound(listHand.SelectedIndex);
         }

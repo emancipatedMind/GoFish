@@ -4,11 +4,7 @@ using System.Collections.Generic;
 namespace Decks {
     class CardComparer : IComparer<Card> {
 
-    private SortCardBy sortCriteria = SortCardBy.Suit;
-    public SortCardBy SortCriteria {
-        get { return sortCriteria; }
-        set { sortCriteria = value; }
-    }
+    public SortCardBy SortCriteria { get; set; } = SortCardBy.Suit;
 
         public int Compare(Card x, Card y) {
 

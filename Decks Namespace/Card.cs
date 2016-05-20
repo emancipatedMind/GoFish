@@ -3,24 +3,19 @@ using System;
 namespace Decks {
     class Card {
 
-        private Suits suit;
-        private Values value;
+        private Suits _suit;
+        private Values _value;
 
-        public Suits Suit { get { return suit; } }
-        public Values Value { get { return value; } }
-
-        public string Name {
-            get { return Value.ToString() + " of " + Suit.ToString(); }
-        } 
+        public Suits Suit { get { return _suit; } }
+        public Values Value { get { return _value; } }
+        public string Name { get { return Value.ToString() + " of " + Suit.ToString(); } } 
 
         public Card(Suits suit, Values value) {
-            this.suit = suit;
-            this.value = value;
+            _suit = suit;
+            _value = value;
         }
 
-        public override string ToString() {
-            return Name;
-        }
+        public override string ToString() => Name;
 
         static public string Plural(Values value) {
             if (value == Values.Six) return "Sixes";

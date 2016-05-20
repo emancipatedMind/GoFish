@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace Decks {
@@ -7,6 +8,10 @@ namespace Decks {
         static private Random random = new Random();
 
         public int Count { get { return cards.Count; } }
+
+        public int CountOfRedCards { get { return GetCountOf(Suits.Diamonds) + GetCountOf(Suits.Hearts); } }
+
+        public int CountOfBlackCards { get { return GetCountOf(Suits.Spades) + GetCountOf(Suits.Clubs); } }
 
         public Deck() {
             cards = new List<Card>();
@@ -21,18 +26,10 @@ namespace Decks {
             cards = new List<Card>(initialCards);
         }
 
-        public void Add(Card cardToAdd) {
-            cards.Add(cardToAdd);
-        }
-
         public Card Deal(int index) {
             Card CardToDeal = cards[index];
             cards.RemoveAt(index);
             return CardToDeal;
-        }
-
-        public Card Deal() {
-            return Deal(0);
         }
 
         public void Shuffle() {
@@ -45,35 +42,28 @@ namespace Decks {
             cards = newCards;
         }
 
-        public IEnumerable<string> GetCardNames() {
-            string[] CardNames = new string[cards.Count];
-            for ( int i = 0 ; i < cards.Count ; i++ ) CardNames[i] = cards[i].Name;
-            return CardNames;
-        }
-
-        public void Sort() {
-            cards.Sort(new CardComparer() {SortCriteria = SortCardBy.ValueThenSuit} );
-        }
-
-        public void Sort(SortCardBy sortCriteria) {
-            cards.Sort(new CardComparer() {SortCriteria = sortCriteria} );
-        }
-
-        public Card Peek(int cardNumber) {
-            return cards[cardNumber];
-        }
-
-        public bool ContainsValue(Values value) {
-            foreach (Card card in cards)
-                if (card.Value == value) return true;
-            return false;
-        }
-
         public Deck PullOutValues(Values value) {
-            Deck deckToReturn = new Deck(new Card[] { } );
-            for (int i = cards.Count - 1; i >= 0; i--)
-                if (cards[i].Value == value) deckToReturn.Add(Deal(i));
+            Deck deckToReturn = new Deck(cards.Where(c => c.Value == value));
+            cards = cards.Where(c => c.Value != value).ToList();
             return deckToReturn;
         }
+
+        public int GetCountOf(Values value) => cards.Where(c => c.Value == value).Count();
+
+        public int GetCountOf(Suits suit) => cards.Where(c => c.Suit == suit).Count();
+
+        public Card Deal() => Deal(0);
+
+        public void Add(Card cardToAdd) => cards.Add(cardToAdd);
+
+        public IEnumerable<string> GetCardNames() => cards.Select(c => c.Name);
+
+        public void Sort() => cards.Sort(new CardComparer() {SortCriteria = SortCardBy.ValueThenSuit} );
+
+        public void Sort(SortCardBy sortCriteria) => cards.Sort(new CardComparer() {SortCriteria = sortCriteria} );
+
+        public Card Peek(int cardNumber) => cards[cardNumber];
+
+        public bool ContainsValue(Values value) => GetCountOf(value) != 0;
     }
 }

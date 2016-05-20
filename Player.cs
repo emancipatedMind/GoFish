@@ -29,19 +29,12 @@ namespace GoFish {
         public IEnumerable<Values> PullOutBooks() {
             List<Values> books = new List<Values>();
             foreach(Values value in Enum.GetValues(typeof(Values))) {
-                int howMany = 0;
-                for (int card = 0; card < cards.Count; card++)
-                    if (cards.Peek(card).Value == value) howMany++;
-                if (howMany == 4) {
+                if (cards.GetCountOf(value) == 4) {
                     books.Add(value);
                     cards.PullOutValues(value);
                 }
             }
             return books;
-        }
-
-        public Values GetRandomValue() {
-            return cards.Peek(random.Next(cards.Count)).Value;
         }
 
         public Deck DoYouHaveAny(Values value) {
@@ -51,12 +44,11 @@ namespace GoFish {
         }
 
         public void AskForACard(List<Player> players, int myIndex, Deck stock) {
-            if (stock.Count > 0) {
-                if (cards.Count == 0) cards.Add(stock.Deal());
-                Values randomValue = GetRandomValue();
-                AskForACard(players, myIndex, stock, randomValue);
-                if (stock.Count > 0 && players[0].CardCount == 0) players[0].cards.Add(stock.Deal());
-            }
+            if (stock.Count == 0) return;
+            if (cards.Count == 0) cards.Add(stock.Deal());
+            Values randomValue = GetRandomValue();
+            AskForACard(players, myIndex, stock, randomValue);
+            if (stock.Count > 0 && players[0].CardCount == 0) players[0].cards.Add(stock.Deal());
         }
 
         public void AskForACard(List<Player> players, int myIndex, Deck stock, Values value) {
@@ -76,12 +68,14 @@ namespace GoFish {
             }
         }
 
-        public void TakeCard(Card card) { cards.Add(card); }
+        public Values GetRandomValue() => cards.Peek(random.Next(cards.Count)).Value;
 
-        public IEnumerable<string> GetCardNames() { return cards.GetCardNames(); }
+        public void TakeCard(Card card) => cards.Add(card);
 
-        public Card Peek(int cardNumber) { return cards.Peek(cardNumber); }
+        public IEnumerable<string> GetCardNames() => cards.GetCardNames();
 
-        public void SortHand() { cards.Sort(SortCardBy.Value); }
+        public Card Peek(int cardNumber) => cards.Peek(cardNumber); 
+
+        public void SortHand() => cards.Sort(SortCardBy.Value); 
     }
 }

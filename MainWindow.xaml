@@ -24,9 +24,9 @@
         <ScrollViewer x:Name="textBooks" FontSize="12" Background="White" Foreground="Black" Grid.Row="5" Grid.RowSpan="2" Content="{Binding Books}"/>
 
         <TextBlock Text="Your Hand" Grid.Row="0" Grid.Column="2" />
-        <ListBox x:Name="listHand" Background="White" FontSize="12" Height="Auto" Margin="0,0,0,10" Grid.Row="1" Grid.RowSpan="5" Grid.Column="2" IsEnabled="{Binding GameIsProgress}" ItemsSource="{Binding Hand}" />
+        <ListBox x:Name="listHand" Background="White" FontSize="12" Height="Auto" Margin="0,0,0,10" Grid.Row="1" Grid.RowSpan="5" Grid.Column="2" IsEnabled="{Binding GameInProgress}" ItemsSource="{Binding Hand}" />
 
-        <Button x:Name="buttonAsk" Content="Ask for a card" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="6" Grid.Column="2" Click="buttonAsk_Click" IsEnabled="{Binding GameIsProgress}" />
+        <Button x:Name="buttonAsk" Content="Ask for a card" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="6" Grid.Column="2" Click="buttonAsk_Click" IsEnabled="{Binding GameInProgress}" />
 
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="5*" /> 

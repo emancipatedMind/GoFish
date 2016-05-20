@@ -56,14 +56,14 @@ namespace GoFish {
         }
 
         public void PlayOneRound(int selectedPlayerCard) {
-            AddProgress(String.Format("Hand #{0} ----------------------------------------- ", roundNumber));
+            AddProgress($"Hand #{roundNumber} ----------------------------------------- ");
             roundNumber++;
             Values cardToAskFor = players[0].Peek(selectedPlayerCard).Value;
             for (int i = 0; i < players.Count; i++) {
                 if (i == 0) players[0].AskForACard(players, 0, stock, cardToAskFor);
                 else players[i].AskForACard(players, i, stock);
                 if (PullOutBooks(players[i])) {
-                    AddProgress(players[i].Name + " drew a new hand" + Environment.NewLine);
+                    AddProgress($"{players[i].Name} drew a new hand{Environment.NewLine}");
                     int card = 1;
                     while (card <=5 && stock.Count > 0) {
                         players[i].TakeCard(stock.Deal());
@@ -74,12 +74,12 @@ namespace GoFish {
                 players[0].SortHand();
                 if (stock.Count == 0) {
                     AddProgress("The stock is out of cards. Game over!");
-                    AddProgress("The winner is... " + GetWinnerName());
+                    AddProgress($"The winner is... {GetWinnerName()}");
                     ResetGame();
                     return;
                 }
             }
-            AddProgress(String.Format("The stock currently has {0} {1}.", stock.Count, (stock.Count == 1 ? "card" : "cards")));
+            AddProgress($"The stock currently has {stock.Count} card{(stock.Count == 1 ? "" : "s")}.");
             Hand.Clear();
             foreach (string cardName in GetPlayerCardNames()) Hand.Add(cardName);
             if (GameNotStarted) AddProgress(DescribePlayerHands());
@@ -95,7 +95,8 @@ namespace GoFish {
 
         public string DescribeBooks() {
             string whoHasWhichBooks = "";
-            foreach (Values value in books.Keys) whoHasWhichBooks += books[value].Name + " has a book of " + Card.Plural(value) + Environment.NewLine;
+            foreach (Values value in books.Keys)
+                whoHasWhichBooks += $"{books[value].Name} has a book of {Card.Plural(value)}{Environment.NewLine}";
             return whoHasWhichBooks;
         }
 
@@ -110,7 +111,7 @@ namespace GoFish {
             foreach (string name in winners.Keys)
                 if (winners[name] > mostBooks) mostBooks = winners[name];
             bool tie = false;
-            string winnerList = "";
+            string winnerList = String.Empty;
             foreach (string name in winners.Keys)
                 if (winners[name] == mostBooks) {
                     if (!string.IsNullOrEmpty(winnerList)) {
@@ -119,23 +120,19 @@ namespace GoFish {
                     }
                     winnerList += name;
                 }
-            winnerList += " with " + mostBooks + " books";
-            if (tie) winnerList = " A tie between " + winnerList;
+            winnerList += $" with {mostBooks} books";
+            if (tie) winnerList = $" A tie between {winnerList}";
             return winnerList;
         }
 
-        public IEnumerable<string> GetPlayerCardNames() {
-            return players[0].GetCardNames();
-        }
-
         public string DescribePlayerHands() {
-            string description = "";
+            string description = String.Empty;
             for (int i = 0; i < players.Count; i++) {
-                description += players[i].Name + " has " + players[i].CardCount;
+                description += players[i].Name + $" has {players[i].CardCount}";
                 if (players[i].CardCount == 1) description += " card.";
                 else description += " cards.";
             }
-            description += "The stock has " + stock.Count + " cards left.";
+            description += $"The stock has {stock.Count} cards left.";
             return description;
         }
 
@@ -159,9 +156,8 @@ namespace GoFish {
             Hand.Clear();
         }
         
-        private void OnPropertyChanged(string propertyChanged) {
-            PropertyChangedEventHandler propertyChangedHandler = PropertyChanged;
-            if (propertyChangedHandler != null) propertyChangedHandler(this, new PropertyChangedEventArgs(propertyChanged) );
-        }
+        public IEnumerable<string> GetPlayerCardNames() => players[0].GetCardNames();
+
+        private void OnPropertyChanged(string propertyChanged) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyChanged)); 
     }
 }
