@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:GoFish"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <local:Game x:Key="game" />
     </Application.Resources>
 </Application>
