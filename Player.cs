@@ -1,15 +1,10 @@
-﻿using Decks;
+﻿using Cards;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GoFish {
     class Player {
-
+        
         private Deck cards = new Deck(new Card[] { });
         private Random random;
         private string name;
@@ -28,12 +23,11 @@ namespace GoFish {
 
         public IEnumerable<Values> PullOutBooks() {
             List<Values> books = new List<Values>();
-            foreach(Values value in Enum.GetValues(typeof(Values))) {
+            foreach(Values value in Enum.GetValues(typeof(Values)))
                 if (cards.GetCountOf(value) == 4) {
                     books.Add(value);
                     cards.PullOutValues(value);
                 }
-            }
             return books;
         }
 
@@ -54,14 +48,13 @@ namespace GoFish {
         public void AskForACard(List<Player> players, int myIndex, Deck stock, Values value) {
             mainGame.AddProgress(Name + " asks if anyone has a " + value);
             int totalCardsGiven = 0;
-            for (int i = 0; i < players.Count; i++) {
+            for (int i = 0; i < players.Count; i++) 
                 if (i != myIndex) {
                     Player player = players[i];
                     Deck CardsGiven = player.DoYouHaveAny(value);
                     totalCardsGiven += CardsGiven.Count;
                     while (CardsGiven.Count > 0) cards.Add(CardsGiven.Deal());
                 }
-            }
             if (totalCardsGiven == 0 && stock.Count > 0) {
                 mainGame.AddProgress(Name + " must draw from the stock.");
                 cards.Add(stock.Deal());

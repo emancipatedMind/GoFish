@@ -1,4 +1,4 @@
-﻿using Decks;
+﻿using Cards;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -17,7 +17,6 @@ namespace GoFish {
         public event PropertyChangedEventHandler PropertyChanged;
 
         public bool GameInProgress { get; private set; }
-        public bool GameNotStarted { get { return !GameInProgress; } }
         public string PlayerName { get; set; }
         public ObservableCollection<string> Hand { get; private set; }
         public string Books { get { return DescribeBooks(); } }
@@ -43,7 +42,7 @@ namespace GoFish {
             players[0].SortHand();
             Hand.Clear();
             foreach (string cardName in GetPlayerCardNames()) Hand.Add(cardName);
-            if (GameNotStarted) AddProgress(DescribePlayerHands()); 
+            if (!GameInProgress) AddProgress(DescribePlayerHands()); 
             OnPropertyChanged("Books");
         }
 
@@ -82,7 +81,7 @@ namespace GoFish {
             AddProgress($"The stock currently has {stock.Count} card{(stock.Count == 1 ? "" : "s")}.");
             Hand.Clear();
             foreach (string cardName in GetPlayerCardNames()) Hand.Add(cardName);
-            if (GameNotStarted) AddProgress(DescribePlayerHands());
+            if (!GameInProgress) AddProgress(DescribePlayerHands());
         }
 
         public bool PullOutBooks(Player player) {

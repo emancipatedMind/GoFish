@@ -8,13 +8,14 @@
         Title="Go Fish!" Height="600" Width="525" Background="Gray" >
         <Window.Resources>
             <local:Game x:Key="game" />
-        </Window.Resources>
+        <local:BooleanNotConverter x:Key="notConverter"/>
+    </Window.Resources>
         <Grid Margin="10" DataContext="{StaticResource ResourceKey=game }">
 
         <TextBlock Text="Your Name" />
         <StackPanel Orientation="Horizontal" Grid.Row="1">
-            <TextBox x:Name="textName" FontSize="12" Width="150" Text="{Binding PlayerName, Mode=TwoWay}" IsEnabled="{Binding GameNotStarted}" />
-            <Button x:Name="buttonStart" Margin="5,0" Content="Start the game!" Click="buttonStart_Click" IsEnabled="{Binding GameNotStarted}" />
+            <TextBox x:Name="textName" FontSize="12" Width="150" Text="{Binding PlayerName, Mode=TwoWay}" IsEnabled="{Binding GameInProgress, Converter={StaticResource notConverter}}" />
+            <Button x:Name="buttonStart" Margin="5,0" Content="Start the game!" Click="buttonStart_Click" IsEnabled="{Binding GameInProgress, Converter={StaticResource notConverter}}" />
         </StackPanel>
 
         <TextBlock Text="Game progress" Grid.Row="2" Margin="0,10,0,0" />
