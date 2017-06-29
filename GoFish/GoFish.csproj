@@ -66,10 +66,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Card.cs" />
     <Compile Include="Game.cs" />
-    <Compile Include="Suits.cs" />
-    <Compile Include="Values.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

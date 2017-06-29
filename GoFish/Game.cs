@@ -3,23 +3,12 @@
     using System.Collections.Generic;
     using System.Linq;
     using ToolkitNFW4.XAML;
+    using PlayingCards;
     public class Game : EntityBase {
 
-        IEnumerable<Card> randomDeck;
         bool _gameInProgress = false;
 
         public Game() {
-            var suits = (IEnumerable<Suits>)Enum.GetValues(typeof(Suits));
-            var values = (Values[])Enum.GetValues(typeof(Values));
-            var randomizer = new Random();
-            Card[] newDeck = suits
-                .SelectMany(s => values.Select(v => new Card(s, v)))
-                .ToArray();
-
-            randomDeck = newDeck
-                .Select(c => new { Card = c, Order = randomizer.Next() })
-                .OrderBy(x => x.Order)
-                .Select(x => x.Card);
 
             Player = new Player("Peter");
             ComputerPlayers = new Player[] {
@@ -58,7 +47,7 @@
 
             int skipAmount = allPlayers.Count * DealAmount;
 
-            IEnumerable<Card> shuffledDeck = randomDeck.ToArray();
+            IEnumerable<Card> shuffledDeck = Deck.NewShuffled;
 
             var dealedPlayers = allPlayers.Zip(
                 Enumerable.Range(0, allPlayers.Count).Select(x => x * DealAmount),

@@ -2,6 +2,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using PlayingCards;
     public class Player {
 
         private Random random = new Random();
@@ -16,7 +17,6 @@
         }
 
         public string Name { get; }
-        public bool IsUser { get; }
         public IEnumerable<Card> Cards { get; }
 
         public Player AcceptCards(IEnumerable<Card> cards) =>
