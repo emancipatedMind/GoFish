@@ -1,11 +1,9 @@
 ﻿namespace GoFish {
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using PlayingCards;
     public class Player {
 
-        private Random random = new Random();
         public Player(string name) {
             Name = name;
             Cards = new Card[0];

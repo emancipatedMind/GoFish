@@ -7,9 +7,9 @@
     public class Game : EntityBase {
 
         bool _gameInProgress = false;
+        IEnumerable<Player> _players;
 
         public Game() {
-
             Player = new Player("Peter");
             ComputerPlayers = new Player[] {
                 new Player("Joe"),
@@ -18,6 +18,7 @@
             };
 
             GameStart = new DelegateCommand(GameStartCallback);
+            ChangeName = new DelegateCommand(GameStartCallback);
         }
 
         public IEnumerable<Player> ComputerPlayers { get; private set; }
@@ -33,31 +34,24 @@
             }
         }
         public DelegateCommand GameStart { get; }
+        public DelegateCommand ChangeName { get; }
 
-        void GameStartCallback(object o) {
-            Player = Player.ChangeName(o.ToString());
-            GameInProgress = true;
-            Deal();
-        }
+        private void GameStartCallback() {
 
-        private void Deal() {
             var allPlayers = new List<Player>();
             allPlayers.Add(Player);
-            allPlayers.AddRange(ComputerPlayers);
+            allPlayers.AddRange(ComputerPlayers); 
 
-            int skipAmount = allPlayers.Count * DealAmount;
+            GameInProgress = true;
 
-            IEnumerable<Card> shuffledDeck = Deck.NewShuffled;
+            (var players, var cards) = StatelessModel.Deal(allPlayers, Deck.NewShuffled, DealAmount);
+            Player = players.First();
+            ComputerPlayers = players.Skip(1); 
 
-            var dealedPlayers = allPlayers.Zip(
-                Enumerable.Range(0, allPlayers.Count).Select(x => x * DealAmount),
-                (p, v) => p.AcceptCards(shuffledDeck.Skip(v).Take(DealAmount))
-            );
-
-            RemainingCards = shuffledDeck.Skip(skipAmount);
-            Player = dealedPlayers.First();
-            ComputerPlayers = dealedPlayers.Skip(1);
         }
+
+        private void ChangeNameCallback(object o) =>
+            Player = Player.ChangeName(o.ToString());
 
     }
 }
