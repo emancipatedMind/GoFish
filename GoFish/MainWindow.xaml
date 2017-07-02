@@ -24,19 +24,30 @@
 
         <TextBlock Text="Your Name" />
         <StackPanel Orientation="Horizontal" Grid.Row="1">
-            <TextBox x:Name="textName" FontSize="12" Width="150" Text="" IsEnabled="True" />
-            <Button x:Name="buttonStart" Margin="5,0" Content="Start the game!" IsEnabled="True" />
+            <TextBox FontSize="12" Width="150" Text="{Binding User.Name}" />
+            <Button Margin="5,0" Content="Start the game!" Command="{Binding StartGame}"/>
         </StackPanel>
 
         <TextBlock Text="Game progress" Grid.Row="2" Margin="0,10,0,0" />
-        <ScrollViewer x:Name="textProgress" Grid.Row="3" FontSize="12" Background="White" Foreground="Black" Content=""/>
+        <ScrollViewer Grid.Row="3" Background="White" Foreground="Black" />
 
-        <TextBlock Text="Books" Grid.Row="4" Margin="0,10,0,0" />
-        <ScrollViewer x:Name="textBooks" FontSize="12" Background="White" Foreground="Black" Grid.Row="5" Grid.RowSpan="2" Content=""/>
+        <Label Content="Books" Grid.Row="4" Margin="0,10,0,0" />
+        <ScrollViewer FontSize="12" Background="White" Foreground="Black" Grid.Row="5" Grid.RowSpan="2" />
 
         <TextBlock Text="Your Hand" Grid.Row="0" Grid.Column="2" />
-        <ListBox x:Name="listHand" Background="White" FontSize="12" Height="Auto" Margin="0,0,0,10" Grid.Row="1" Grid.RowSpan="5" Grid.Column="2" IsEnabled="True" />
+        <ListView Grid.Row="1" Grid.RowSpan="3" Grid.Column="2" />
 
-        <Button x:Name="buttonAsk" Content="Ask for a card" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="6" Grid.Column="2" IsEnabled="True" />
+        <Label Content="Players" Grid.Row="4" Grid.Column="2" Margin="0,10,0,0" />
+        <ListView Margin="0,0,0,10" Grid.Row="5" Grid.Column="2" ItemsSource="{Binding ComputerPlayers}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock>
+                        <Run Text="{Binding Name}"/><Run Text=" ("/><Run Text="{Binding Count, Mode=OneWay}"/><Run Text=")"/>
+                    </TextBlock>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <Button Content="Ask for a card" Grid.Row="6" Grid.Column="2" IsEnabled="True"/>
     </Grid>
 </Window>
