@@ -1,19 +1,12 @@
 ﻿namespace GoFish {
-    using System.Collections.Generic;
     using PlayingCards;
+    using ToolkitNFW4.XAML;
     public class Player {
 
-        public Player(string name) {
-            Name = name;
-        }
-
-        public Player(string name, List<Card> cards) {
-            Name = name;
-            Cards.AddRange(cards);
-        }
+        public Player(string name) => Name = name;
 
         public string Name { get; set; }
-        public List<Card> Cards { get; } = new List<Card>();
+        public CustomCollection<Card> Cards { get; } = new CustomCollection<Card>();
 
     }
 }
