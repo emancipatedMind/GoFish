@@ -1,11 +1,11 @@
 ﻿namespace GoFish {
     using ToolkitNFW4.XAML;
     using System.Linq;
-    public class PlayerViewModel : EntityBase {
+    public class ComputerPlayerViewModel : EntityBase {
 
         Player _player;
 
-        public PlayerViewModel(Player player) {
+        public ComputerPlayerViewModel(Player player) {
             _player = player;
             _player.Cards.CollectionAddedTo += CollectionChanged;
             _player.Cards.CollectionCleared += CollectionChanged;

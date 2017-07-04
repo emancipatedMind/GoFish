@@ -11,7 +11,7 @@
             Players.Add(new Player("John"));
             Players.Add(new Player("Raymond"));
 
-            ComputerPlayers.AddRange(Players.Skip(1).Select(p => new PlayerViewModel(p)));
+            ComputerPlayers.AddRange(Players.Skip(1).Select(p => new ComputerPlayerViewModel(p)));
 
             StartGame = new DelegateCommand(StartGameCallback);
         }
@@ -19,7 +19,7 @@
         List<Player> Players { get; } = new List<Player>();
 
         public Player User => Players.First();
-        public List<PlayerViewModel> ComputerPlayers { get; } = new List<PlayerViewModel>();
+        public List<ComputerPlayerViewModel> ComputerPlayers { get; } = new List<ComputerPlayerViewModel>();
         public DelegateCommand StartGame { get; }
 
         int DealAmount { get; set; } = 5;
