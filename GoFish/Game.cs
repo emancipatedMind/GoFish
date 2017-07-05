@@ -18,6 +18,7 @@
             ComputerPlayers.AddRange(Players.Skip(1).Select(p => new ComputerPlayerViewModel(p)));
 
             StartGame = new DelegateCommand(StartGameCallback);
+            RequestCard = new DelegateCommand(RequestCardCallback);
         }
 
         List<Player> Players { get; } = new List<Player>();
@@ -25,6 +26,7 @@
         public UserViewModel User { get; }
         public List<ComputerPlayerViewModel> ComputerPlayers { get; } = new List<ComputerPlayerViewModel>();
         public DelegateCommand StartGame { get; }
+        public DelegateCommand RequestCard { get; }
 
         public Card? SelectedCard {
             get => _selectedCard;
@@ -44,6 +46,8 @@
 
         int DealAmount { get; set; } = 5;
         List<Card> Cards { get; } = new List<Card>();
+
+        private void RequestCardCallback() { }
 
         private void StartGameCallback() {
             Deal();

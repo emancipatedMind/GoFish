@@ -48,7 +48,7 @@
             </ListView.ItemTemplate>
         </ListView>
 
-        <Button Content="Ask for a card" Grid.Row="6" Grid.Column="2">
+        <Button Content="Ask for a card" Grid.Row="6" Grid.Column="2" Command="{Binding RequestCard}">
             <Button.Style>
                 <Style TargetType="Button">
                     <Setter Property="IsEnabled" Value="True"/>
