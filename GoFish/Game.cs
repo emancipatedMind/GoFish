@@ -2,6 +2,7 @@
     using PlayingCards;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text;
     using ToolkitNFW4.XAML;
     public class Game : EntityBase {
 
@@ -47,7 +48,12 @@
         int DealAmount { get; set; } = 5;
         List<Card> Cards { get; } = new List<Card>();
 
-        private void RequestCardCallback() { }
+        private void RequestCardCallback() {
+            AskForCard(Players.First(), Players.Single(p => p == SelectedPlayer.Player), SelectedCard.Value);
+
+            SelectedCard = null;
+            SelectedPlayer = null;
+        }
 
         private void StartGameCallback() {
             Deal();
@@ -62,6 +68,8 @@
             }
             Cards.AddRange(cards.Skip(Players.Count * DealAmount));
         }
+
+        private void AskForCard(Player askingPlayer, Player playerBeingAsked, Card card) { }
 
     }
 }

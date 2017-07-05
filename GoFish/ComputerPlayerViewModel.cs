@@ -17,6 +17,7 @@
 
         public string Name { get => _player.Name; set => _player.Name = value; }
         public int Count => _player.Cards.Count();
+        public Player Player => _player;
 
     }
 }
