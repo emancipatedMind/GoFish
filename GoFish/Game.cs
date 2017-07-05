@@ -8,6 +8,7 @@
 
         Card? _selectedCard;
         ComputerPlayerViewModel _selectedPlayer;
+        bool _gameIdle = true;
 
         public Game() {
             Players.Add(new Player("Peter"));
@@ -45,6 +46,15 @@
             }
         }
 
+        public bool GameIdle {
+            get => _gameIdle;
+            set {
+                if (_gameIdle == value) return;
+                _gameIdle = value;
+                OnPropertyChanged(nameof(GameIdle));
+            }
+        }
+
         int DealAmount { get; set; } = 5;
         List<Card> Cards { get; } = new List<Card>();
 
@@ -56,6 +66,7 @@
         }
 
         private void StartGameCallback() {
+            GameIdle = false;
             Deal();
         }
 
