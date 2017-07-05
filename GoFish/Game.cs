@@ -5,6 +5,9 @@
     using ToolkitNFW4.XAML;
     public class Game : EntityBase {
 
+        Card? _selectedCard;
+        ComputerPlayerViewModel _selectedPlayer;
+
         public Game() {
             Players.Add(new Player("Peter"));
             Players.Add(new Player("Melvin"));
@@ -22,6 +25,22 @@
         public UserViewModel User { get; }
         public List<ComputerPlayerViewModel> ComputerPlayers { get; } = new List<ComputerPlayerViewModel>();
         public DelegateCommand StartGame { get; }
+
+        public Card? SelectedCard {
+            get => _selectedCard;
+            set {
+                _selectedCard = value;
+                OnPropertyChanged(nameof(SelectedCard));
+            }
+        }
+
+        public ComputerPlayerViewModel SelectedPlayer {
+            get => _selectedPlayer;
+            set {
+                _selectedPlayer = value;
+                OnPropertyChanged(nameof(SelectedPlayer));
+            }
+        }
 
         int DealAmount { get; set; } = 5;
         List<Card> Cards { get; } = new List<Card>();
