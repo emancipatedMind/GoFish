@@ -53,12 +53,6 @@
                 <Style TargetType="Button">
                     <Setter Property="IsEnabled" Value="True"/>
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding SelectedCard}" Value="{x:Null}">
-                            <Setter Property="IsEnabled" Value="False"/>
-                        </DataTrigger>
-                        <DataTrigger Binding="{Binding SelectedPlayer}" Value="{x:Null}">
-                            <Setter Property="IsEnabled" Value="False"/>
-                        </DataTrigger>
                         <DataTrigger Binding="{Binding GameIdle}" Value="True">
                             <Setter Property="IsEnabled" Value="False"/>
                         </DataTrigger>

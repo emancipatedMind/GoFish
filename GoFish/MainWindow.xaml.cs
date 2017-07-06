@@ -21,6 +21,11 @@ namespace GoFish {
 
         public MainWindow() {
             InitializeComponent();
+
+            var game = (Game)Application.Current.Resources["game"];
+
+            game.Notify += (s, e) =>
+                Application.Current.Dispatcher.Invoke(new Action(() => MessageBox.Show(e.Data)));
         }
 
     }

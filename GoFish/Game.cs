@@ -59,6 +59,12 @@
         List<Card> Cards { get; } = new List<Card>();
 
         private void RequestCardCallback() {
+
+            if (SelectedCard == null || SelectedPlayer == null) {
+                FireNotifyEvent("Please select both a card to ask for, and the person to ask.");
+                return;
+            }
+
             AskForCard(Players.First(), Players.Single(p => p == SelectedPlayer.Player), SelectedCard.Value);
 
             SelectedCard = null;
