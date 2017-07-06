@@ -12,6 +12,7 @@
         ComputerPlayerViewModel _selectedPlayer;
         bool _gameIdle = true;
         string _gameProgress = "";
+        string _books = "";
 
         public Game() {
             Players.Add(new Player("Peter"));
@@ -63,11 +64,19 @@
 
         public string GameProgress {
             get => _gameProgress;
-
             set {
                 if (_gameProgress == value) return;
                 _gameProgress = value;
                 OnPropertyChanged(nameof(GameProgress));
+            }
+        }
+
+        public string Books {
+            get => _books;
+            set {
+                if (_books == value) return;
+                _books = value;
+                OnPropertyChanged(nameof(Books));
             }
         }
 
