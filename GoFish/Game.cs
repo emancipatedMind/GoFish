@@ -99,11 +99,14 @@
 
             SelectedCard = null;
             SelectedPlayer = null;
+
+            User.SortHand();
         }
 
         private void StartGameCallback() {
             GameIdle = false;
             Deal();
+            User.SortHand();
         }
 
         private void Deal() {

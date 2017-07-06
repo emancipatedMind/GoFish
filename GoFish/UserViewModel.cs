@@ -1,6 +1,7 @@
 ﻿namespace GoFish {
     using System.Collections.ObjectModel;
     using PlayingCards;
+    using System.Linq;
     public class UserViewModel {
 
         private Player _user;
@@ -13,6 +14,12 @@
 
         public ObservableCollection<Card> Cards { get; } = new ObservableCollection<Card>();
         public string Name { get => _user.Name; set => _user.Name = value; }
+
+        public void SortHand() {
+            var sortedCards = Cards.OrderBy(c => c.Value).ToList();
+            Cards.Clear();
+            sortedCards.ForEach(c => Cards.Add(c));
+        }
 
         private void Cards_CollectionCleared(object sender, ToolkitNFW4.EventArgs.GenericCollectionEventArgs<Card> e) {
             Cards.Clear();
