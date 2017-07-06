@@ -29,7 +29,7 @@
         </StackPanel>
 
         <TextBlock Text="Game progress" Grid.Row="2" Margin="0,10,0,0" />
-        <ScrollViewer Grid.Row="3" Background="White" Foreground="Black" />
+        <ScrollViewer Grid.Row="3" Background="White" Foreground="Black" Content="{Binding GameProgress}"/>
 
         <Label Content="Books" Grid.Row="4" Margin="0,10,0,0" />
         <ScrollViewer FontSize="12" Background="White" Foreground="Black" Grid.Row="5" Grid.RowSpan="2" />

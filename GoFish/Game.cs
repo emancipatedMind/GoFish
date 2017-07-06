@@ -9,6 +9,7 @@
         Card? _selectedCard;
         ComputerPlayerViewModel _selectedPlayer;
         bool _gameIdle = true;
+        string _gameProgress;
 
         public Game() {
             Players.Add(new Player("Peter"));
@@ -58,6 +59,16 @@
         int DealAmount { get; set; } = 5;
         List<Card> Cards { get; } = new List<Card>();
 
+        public string GameProgress {
+            get => _gameProgress;
+
+            set {
+                if (_gameProgress == value) return;
+                _gameProgress = value;
+                OnPropertyChanged(nameof(GameProgress));
+            }
+        }
+
         private void RequestCardCallback() {
 
             if (SelectedCard == null || SelectedPlayer == null) {
@@ -86,7 +97,27 @@
             Cards.AddRange(cards.Skip(Players.Count * DealAmount));
         }
 
-        private void AskForCard(Player askingPlayer, Player playerBeingAsked, Card card) { }
+        private void AskForCard(Player askingPlayer, Player playerBeingAsked, Card card) {
+            var sb = new StringBuilder();
+            sb.AppendLine($"{askingPlayer.Name} says, \"Hey {playerBeingAsked.Name}... Do you have any {Card.Plural(card.Value)}?\"");
+            int cardCount = playerBeingAsked.Cards.Count(c => c.Value == card.Value);
+            if (cardCount == 0) {
+                sb.AppendLine($"{playerBeingAsked.Name} says, \"Go fish.\"");
+                Card cardToTake = Cards.ElementAt(0);
+                Cards.RemoveAt(0);
+                askingPlayer.Cards.AddRange(new Card[] { cardToTake });
+                sb.AppendLine($"{askingPlayer.Name} takes one card from deck.");
+            }
+            else {
+                Card[] cardsToHandOver = playerBeingAsked.Cards.Where(c => c.Value == card.Value).ToArray();
+                Card[] cardsToKeep = playerBeingAsked.Cards.Where(c => c.Value != card.Value).ToArray();
+                playerBeingAsked.Cards.Clear();
+                playerBeingAsked.Cards.AddRange(cardsToKeep);
+                askingPlayer.Cards.AddRange(cardsToHandOver);
+                sb.AppendLine($"{playerBeingAsked.Name} hands over {cardCount} {(cardCount == 1 ? card.Value.ToString() : Card.Plural(card.Value))}.");
+            }
+            GameProgress = sb.ToString();
+        }
 
     }
 }
