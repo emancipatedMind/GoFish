@@ -90,12 +90,12 @@
 
             GameProgress = $"***** Round #{++_roundNumber} *****\r\n";
 
-            AskForCard(Players.First(), Players.Single(p => p == SelectedPlayer.Player), SelectedCard.Value);
+            AskForCard(Players.First(), Players.Single(p => p == SelectedPlayer.Player), SelectedCard.Value.Value);
 
             int playerCountDecremented = Players.Count - 1;
 
             Players.Skip(1).ToList().ForEach(p => {
-                AskForCard(p, Players.Where(pl => pl != p).ElementAt(randomizer.Next(playerCountDecremented)), p.Cards.ElementAt(randomizer.Next(p.Cards.Count)));
+                AskForCard(p, Players.Where(pl => pl != p).ElementAt(randomizer.Next(playerCountDecremented)), p.Cards.ElementAt(randomizer.Next(p.Cards.Count)).Value);
             });
 
             GameProgress += $"The deck has {(Cards.Count == 1 ? "just 1 card" : $"{Cards.Count} cards") } left.";
@@ -124,11 +124,11 @@
             Cards.AddRange(cards.Skip(Players.Count * DealAmount));
         }
 
-        private void AskForCard(Player askingPlayer, Player playerBeingAsked, Card card) {
+        private void AskForCard(Player askingPlayer, Player playerBeingAsked, Values cardValue) {
             var sb = new StringBuilder();
-            string pluralText = Card.Plural(card.Value);
+            string pluralText = Card.Plural(cardValue);
             sb.AppendLine($"{askingPlayer.Name} says, \"Hey {playerBeingAsked.Name}... Do you have any {pluralText}?\"");
-            int cardCount = playerBeingAsked.Cards.Count(c => c.Value == card.Value);
+            int cardCount = playerBeingAsked.Cards.Count(c => c.Value == cardValue);
             if (cardCount == 0) {
                 sb.AppendLine($"{playerBeingAsked.Name} says, \"Go fish.\"");
                 Card cardToTake = Cards.ElementAt(0);
@@ -137,12 +137,12 @@
                 sb.AppendLine($"{askingPlayer.Name} takes one card from deck.");
             }
             else {
-                Card[] cardsToHandOver = playerBeingAsked.Cards.Where(c => c.Value == card.Value).ToArray();
-                Card[] cardsToKeep = playerBeingAsked.Cards.Where(c => c.Value != card.Value).ToArray();
+                Card[] cardsToHandOver = playerBeingAsked.Cards.Where(c => c.Value == cardValue).ToArray();
+                Card[] cardsToKeep = playerBeingAsked.Cards.Where(c => c.Value != cardValue).ToArray();
                 playerBeingAsked.Cards.Clear();
                 playerBeingAsked.Cards.AddRange(cardsToKeep);
                 askingPlayer.Cards.AddRange(cardsToHandOver);
-                sb.AppendLine($"{playerBeingAsked.Name} hands over {cardCount} {(cardCount == 1 ? card.Value.ToString() : pluralText)}.");
+                sb.AppendLine($"{playerBeingAsked.Name} hands over {cardCount} {(cardCount == 1 ? cardValue.ToString() : pluralText)}.");
             }
             sb.AppendLine();
             GameProgress += sb.ToString();
