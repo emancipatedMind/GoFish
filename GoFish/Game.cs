@@ -1,15 +1,17 @@
 ﻿namespace GoFish {
     using PlayingCards;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
     using ToolkitNFW4.XAML;
     public class Game : EntityBase {
 
+        Random randomizer = new Random();
         Card? _selectedCard;
         ComputerPlayerViewModel _selectedPlayer;
         bool _gameIdle = true;
-        string _gameProgress;
+        string _gameProgress = "";
 
         public Game() {
             Players.Add(new Player("Peter"));
@@ -76,7 +78,15 @@
                 return;
             }
 
+            GameProgress = "";
+
             AskForCard(Players.First(), Players.Single(p => p == SelectedPlayer.Player), SelectedCard.Value);
+
+            int playerCountDecremented = Players.Count - 1;
+
+            Players.Skip(1).ToList().ForEach(p => {
+                AskForCard(p, Players.Where(pl => pl != p).ElementAt(randomizer.Next(playerCountDecremented)), p.Cards.ElementAt(randomizer.Next(p.Cards.Count)));
+            });
 
             SelectedCard = null;
             SelectedPlayer = null;
@@ -99,7 +109,8 @@
 
         private void AskForCard(Player askingPlayer, Player playerBeingAsked, Card card) {
             var sb = new StringBuilder();
-            sb.AppendLine($"{askingPlayer.Name} says, \"Hey {playerBeingAsked.Name}... Do you have any {Card.Plural(card.Value)}?\"");
+            string pluralText = Card.Plural(card.Value);
+            sb.AppendLine($"{askingPlayer.Name} says, \"Hey {playerBeingAsked.Name}... Do you have any {pluralText}?\"");
             int cardCount = playerBeingAsked.Cards.Count(c => c.Value == card.Value);
             if (cardCount == 0) {
                 sb.AppendLine($"{playerBeingAsked.Name} says, \"Go fish.\"");
@@ -114,9 +125,10 @@
                 playerBeingAsked.Cards.Clear();
                 playerBeingAsked.Cards.AddRange(cardsToKeep);
                 askingPlayer.Cards.AddRange(cardsToHandOver);
-                sb.AppendLine($"{playerBeingAsked.Name} hands over {cardCount} {(cardCount == 1 ? card.Value.ToString() : Card.Plural(card.Value))}.");
+                sb.AppendLine($"{playerBeingAsked.Name} hands over {cardCount} {(cardCount == 1 ? card.Value.ToString() : pluralText)}.");
             }
-            GameProgress = sb.ToString();
+            sb.AppendLine();
+            GameProgress += sb.ToString();
         }
 
     }
