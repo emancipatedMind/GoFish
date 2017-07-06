@@ -3,9 +3,9 @@
     using System.Linq;
     public class ComputerPlayerViewModel : EntityBase {
 
-        Player _player;
+        IPlayer _player;
 
-        public ComputerPlayerViewModel(Player player) {
+        public ComputerPlayerViewModel(IPlayer player) {
             _player = player;
             _player.Cards.CollectionAddedTo += CollectionChanged;
             _player.Cards.CollectionCleared += CollectionChanged;
@@ -17,7 +17,7 @@
 
         public string Name { get => _player.Name; set => _player.Name = value; }
         public int Count => _player.Cards.Count();
-        public Player Player => _player;
+        public IPlayer Player => _player;
 
     }
 }

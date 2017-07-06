@@ -1,7 +1,7 @@
 ﻿namespace GoFish {
     using PlayingCards;
     using ToolkitNFW4.XAML;
-    public class Player {
+    public class Player : IPlayer {
 
         public Player(string name) => Name = name;
 

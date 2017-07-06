@@ -28,7 +28,7 @@
             RequestCard = new DelegateCommand(RequestCardCallback);
         }
 
-        List<Player> Players { get; } = new List<Player>();
+        List<IPlayer> Players { get; } = new List<IPlayer>();
 
         public UserViewModel User { get; }
         public List<ComputerPlayerViewModel> ComputerPlayers { get; } = new List<ComputerPlayerViewModel>();
@@ -124,7 +124,7 @@
             Cards.AddRange(cards.Skip(Players.Count * DealAmount));
         }
 
-        private void AskForCard(Player askingPlayer, Player playerBeingAsked, Values cardValue) {
+        private void AskForCard(IPlayer askingPlayer, IPlayer playerBeingAsked, Values cardValue) {
             var sb = new StringBuilder();
             string pluralText = Card.Plural(cardValue);
             sb.AppendLine($"{askingPlayer.Name} says, \"Hey {playerBeingAsked.Name}... Do you have any {pluralText}?\"");

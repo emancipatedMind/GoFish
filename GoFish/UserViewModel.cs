@@ -4,9 +4,9 @@
     using System.Linq;
     public class UserViewModel {
 
-        private Player _user;
+        private IPlayer _user;
 
-        public UserViewModel(Player user) {
+        public UserViewModel(IPlayer user) {
             _user = user;
             _user.Cards.CollectionAddedTo += Cards_CollectionAddedTo;
             _user.Cards.CollectionCleared += Cards_CollectionCleared;
