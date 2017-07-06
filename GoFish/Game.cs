@@ -13,6 +13,7 @@
         bool _gameIdle = true;
         string _gameProgress = "";
         string _books = "";
+        int _roundNumber = 0;
 
         public Game() {
             Players.Add(new Player("Peter"));
@@ -87,7 +88,7 @@
                 return;
             }
 
-            GameProgress = "";
+            GameProgress = $"***** Round #{++_roundNumber} *****\r\n";
 
             AskForCard(Players.First(), Players.Single(p => p == SelectedPlayer.Player), SelectedCard.Value);
 
@@ -97,6 +98,8 @@
                 AskForCard(p, Players.Where(pl => pl != p).ElementAt(randomizer.Next(playerCountDecremented)), p.Cards.ElementAt(randomizer.Next(p.Cards.Count)));
             });
 
+            GameProgress += $"The deck has {(Cards.Count == 1 ? "just 1 card" : $"{Cards.Count} cards") } left.";
+
             SelectedCard = null;
             SelectedPlayer = null;
 
@@ -105,6 +108,8 @@
 
         private void StartGameCallback() {
             GameIdle = false;
+            Books = "";
+            _roundNumber = 0;
             Deal();
             User.SortHand();
         }
