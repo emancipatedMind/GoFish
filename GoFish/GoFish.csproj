@@ -66,6 +66,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="CardRequest.cs" />
+    <Compile Include="CardRequestResult.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="IPlayer.cs" />
     <Compile Include="UserViewModel.cs" />
