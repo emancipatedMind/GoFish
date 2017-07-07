@@ -88,17 +88,29 @@
                 return;
             }
 
-            GameProgress = $"***** Round #{++_roundNumber} *****\r\n";
+            GameProgress = $"********** Round #{++_roundNumber} **********\r\n";
 
-            AskForCard(Players.First(), Players.Single(p => p == SelectedPlayer.Player), SelectedCard.Value.Value);
+            var playerRequest = new CardRequest(Players.First(), Players.Single(p => p == SelectedPlayer.Player), SelectedCard.Value.Value);
+
+            (CardRequestResult playerResponse, var deck) = MakeCardRequest(playerRequest, Cards);
+            GameProgress += ConstructInfoStringForCardRequest(playerResponse, Cards.Count);
 
             int playerCountDecremented = Players.Count - 1;
 
             Players.Skip(1).ToList().ForEach(p => {
-                AskForCard(p, Players.Where(pl => pl != p).ElementAt(randomizer.Next(playerCountDecremented)), p.Cards.ElementAt(randomizer.Next(p.Cards.Count)).Value);
+                IPlayer requestee = Players.Where(pl => pl != p).ElementAt(randomizer.Next(playerCountDecremented));
+                Values rank = p.Cards.ElementAt(randomizer.Next(p.Cards.Count)).Value;
+
+                var request = new CardRequest(p, requestee, rank);
+                (CardRequestResult response, var newDeck) = MakeCardRequest(request, deck);
+                GameProgress += ConstructInfoStringForCardRequest(response, deck.Count());
+                deck = newDeck.ToArray();
             });
 
-            GameProgress += $"The deck has {(Cards.Count == 1 ? "just 1 card" : $"{Cards.Count} cards") } left.";
+            Cards.Clear();
+            Cards.AddRange(deck);
+
+            GameProgress += $"\r\nThe deck has {(Cards.Count == 1 ? "just 1 card" : $"{Cards.Count} cards") } left.";
 
             SelectedCard = null;
             SelectedPlayer = null;
@@ -124,28 +136,36 @@
             Cards.AddRange(cards.Skip(Players.Count * DealAmount));
         }
 
-        private void AskForCard(IPlayer askingPlayer, IPlayer playerBeingAsked, Values cardValue) {
-            var sb = new StringBuilder();
-            string pluralText = Card.Plural(cardValue);
-            sb.AppendLine($"{askingPlayer.Name} says, \"Hey {playerBeingAsked.Name}... Do you have any {pluralText}?\"");
-            int cardCount = playerBeingAsked.Cards.Count(c => c.Value == cardValue);
+        private (CardRequestResult result, IEnumerable<Card> newDeck) MakeCardRequest(CardRequest request, IEnumerable<Card> deck) {
+            int cardCount = request.Requestee.Cards.Count(c => c.Value == request.Rank);
+
             if (cardCount == 0) {
-                sb.AppendLine($"{playerBeingAsked.Name} says, \"Go fish.\"");
-                Card cardToTake = Cards.ElementAt(0);
-                Cards.RemoveAt(0);
-                askingPlayer.Cards.AddRange(new Card[] { cardToTake });
-                sb.AppendLine($"{askingPlayer.Name} takes one card from deck.");
+                if (deck.Count() == 0) return (new CardRequestResult(request, cardCount), new Card[0]);
+                request.Requester.Cards.AddRange(deck.Take(1));
+                return (new CardRequestResult(request, cardCount), deck.Skip(1));
+            }
+
+            Card[] cardsToHandOver = request.Requestee.Cards.Where(c => c.Value == request.Rank).ToArray();
+            Card[] cardsToKeep = request.Requestee.Cards.Where(c => c.Value != request.Rank).ToArray();
+            request.Requestee.Cards.Clear();
+            request.Requestee.Cards.AddRange(cardsToKeep);
+            request.Requester.Cards.AddRange(cardsToHandOver);
+            return (new CardRequestResult(request, cardCount), deck);
+        }
+
+        private string ConstructInfoStringForCardRequest(CardRequestResult result, int deckCountBeforeRequest) {
+            var sb = new StringBuilder();
+            string pluralRankText = Card.Plural(result.Rank);
+            sb.AppendLine();
+            sb.AppendLine($"{result.Requester.Name} says, \"Hey {result.Requestee.Name}... Do you have any {pluralRankText}?\"");
+            if (result.ExchangeCount != 0) {
+                sb.AppendLine($"{result.Requestee.Name} hands over {result.ExchangeCount} {(result.ExchangeCount == 1 ? result.Rank.ToString() : pluralRankText)}.");
             }
             else {
-                Card[] cardsToHandOver = playerBeingAsked.Cards.Where(c => c.Value == cardValue).ToArray();
-                Card[] cardsToKeep = playerBeingAsked.Cards.Where(c => c.Value != cardValue).ToArray();
-                playerBeingAsked.Cards.Clear();
-                playerBeingAsked.Cards.AddRange(cardsToKeep);
-                askingPlayer.Cards.AddRange(cardsToHandOver);
-                sb.AppendLine($"{playerBeingAsked.Name} hands over {cardCount} {(cardCount == 1 ? cardValue.ToString() : pluralText)}.");
+                sb.AppendLine($"{result.Requestee.Name} says, \"Go fish.\"");
+                if (deckCountBeforeRequest != 0) sb.AppendLine($"{result.Requester.Name} takes one card from deck.");
             }
-            sb.AppendLine();
-            GameProgress += sb.ToString();
+            return sb.ToString();
         }
 
     }
