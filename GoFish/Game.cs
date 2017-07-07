@@ -102,22 +102,7 @@
 
             int playerCountDecremented = Players.Count - 1;
 
-            Players.Skip(1).ToList().ForEach(p => {
-                if (p.Cards.Count() == 0) return;
-
-                IPlayer requestee = Players.Where(pl => pl != p).Where(pl => pl.Cards.Count() != 0).ElementAt(randomizer.Next(playerCountDecremented));
-                Values rank = p.Cards.ElementAt(randomizer.Next(p.Cards.Count)).Value;
-
-                var request = new CardRequest(p, requestee, rank);
-                (CardRequestResult response, var newDeck) = MakeCardRequest(request, deck);
-                GameProgress += ConstructInfoStringForCardRequest(response, deck.Count());
-                deck = newDeck.ToArray();
-
-                var booksWithdrawn = WithdrawBooksFound(p);
-                string booksWithdrawnString = ConstructInfoStringForBooksFound(p, booksWithdrawn);
-                GameProgress += booksWithdrawnString;
-                Books += booksWithdrawnString;
-            });
+            deck = ComputerPlayersPlay(deck);
 
             Cards.Clear();
             Cards.AddRange(deck);
@@ -146,6 +131,27 @@
                 Players[i].Cards.AddRange(cards.Skip(i * DealAmount).Take(DealAmount));
             }
             Cards.AddRange(cards.Skip(Players.Count * DealAmount));
+        }
+
+        private IEnumerable<Card> ComputerPlayersPlay(IEnumerable<Card> deck) {
+            int playerCountDecremented = Players.Skip(1).Count();
+            Players.Skip(1).ToList().ForEach(p => {
+                if (p.Cards.Count() == 0) return;
+
+                IPlayer requestee = Players.Where(pl => pl != p).Where(pl => pl.Cards.Count() != 0).ElementAt(randomizer.Next(playerCountDecremented));
+                Values rank = p.Cards.ElementAt(randomizer.Next(p.Cards.Count)).Value;
+
+                var request = new CardRequest(p, requestee, rank);
+                (CardRequestResult response, var newDeck) = MakeCardRequest(request, deck);
+                GameProgress += ConstructInfoStringForCardRequest(response, deck.Count());
+                deck = newDeck.ToArray();
+
+                var booksWithdrawn = WithdrawBooksFound(p);
+                string booksWithdrawnString = ConstructInfoStringForBooksFound(p, booksWithdrawn);
+                GameProgress += booksWithdrawnString;
+                Books += booksWithdrawnString;
+            });
+            return deck;
         }
 
         private (CardRequestResult result, IEnumerable<Card> newDeck) MakeCardRequest(CardRequest request, IEnumerable<Card> deck) {
