@@ -95,6 +95,11 @@
             (CardRequestResult playerResponse, var deck) = MakeCardRequest(playerRequest, Cards);
             GameProgress += ConstructInfoStringForCardRequest(playerResponse, Cards.Count);
 
+            var booksWithdrawnPlayer = WithdrawBooksFound(Players.First());
+            string booksWithdrawnStringPlayer = ConstructInfoStringForBooksFound(Players.First(), booksWithdrawnPlayer);
+            GameProgress += booksWithdrawnStringPlayer;
+            Books += booksWithdrawnStringPlayer;
+
             int playerCountDecremented = Players.Count - 1;
 
             Players.Skip(1).ToList().ForEach(p => {
@@ -105,6 +110,11 @@
                 (CardRequestResult response, var newDeck) = MakeCardRequest(request, deck);
                 GameProgress += ConstructInfoStringForCardRequest(response, deck.Count());
                 deck = newDeck.ToArray();
+
+                var booksWithdrawn = WithdrawBooksFound(p);
+                string booksWithdrawnString = ConstructInfoStringForBooksFound(p, booksWithdrawn);
+                GameProgress += booksWithdrawnString;
+                Books += booksWithdrawnString;
             });
 
             Cards.Clear();
@@ -153,6 +163,20 @@
             return (new CardRequestResult(request, cardCount), deck);
         }
 
+        private IEnumerable<Values> WithdrawBooksFound(IPlayer player) {
+            var booksFound = new List<Values>();
+            var valuesInHand = player.Cards.Select(c => c.Value).Distinct().ToList();
+            valuesInHand.ForEach(v => {
+                if (player.Cards.Count(c => c.Value == v) == 4) {
+                    var cardsToKeep = player.Cards.Where(c => c.Value != v).ToArray();
+                    player.Cards.Clear();
+                    player.Cards.AddRange(cardsToKeep);
+                    booksFound.Add(v);
+                }
+            });
+            return booksFound;
+        }
+
         private string ConstructInfoStringForCardRequest(CardRequestResult result, int deckCountBeforeRequest) {
             var sb = new StringBuilder();
             string pluralRankText = Card.Plural(result.Rank);
@@ -166,6 +190,12 @@
                 if (deckCountBeforeRequest != 0) sb.AppendLine($"{result.Requester.Name} takes one card from deck.");
             }
             return sb.ToString();
+        }
+
+        private string ConstructInfoStringForBooksFound(IPlayer player, IEnumerable<Values> books) {
+            if (books.Count() == 0) return "";
+            books.Select(b => $"{player.Name} lays down book of {Card.Plural(b)}.");
+            return string.Join("\r\n", books.Select(b => $"{player.Name} lays down book of {Card.Plural(b)}.")) + "\r\n";
         }
 
     }
