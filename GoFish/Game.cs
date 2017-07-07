@@ -103,7 +103,9 @@
             int playerCountDecremented = Players.Count - 1;
 
             Players.Skip(1).ToList().ForEach(p => {
-                IPlayer requestee = Players.Where(pl => pl != p).ElementAt(randomizer.Next(playerCountDecremented));
+                if (p.Cards.Count() == 0) return;
+
+                IPlayer requestee = Players.Where(pl => pl != p).Where(pl => pl.Cards.Count() != 0).ElementAt(randomizer.Next(playerCountDecremented));
                 Values rank = p.Cards.ElementAt(randomizer.Next(p.Cards.Count)).Value;
 
                 var request = new CardRequest(p, requestee, rank);
