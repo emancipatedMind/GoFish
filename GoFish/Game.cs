@@ -126,7 +126,7 @@
 
                 allStatuses.Add((
                     ConstructInfoStringForCardRequest(playerResponse),
-                    ConstructInfoStringForBooksFound(Players.First(), booksWithdrawnPlayer),
+                    ConstructInfoStringForBooksFound(booksWithdrawnPlayer),
                     ConstructInfoStringForCardsWithdrawnFromDeck(deckWithDrawalResults)
                 ));
             }
@@ -193,7 +193,7 @@
 
                 status.Add((
                     ConstructInfoStringForCardRequest(result),
-                    ConstructInfoStringForBooksFound(p, booksWithdrawn),
+                    ConstructInfoStringForBooksFound(booksWithdrawn),
                     ConstructInfoStringForCardsWithdrawnFromDeck(deckWithDrawalResults)
                 ));
 
@@ -236,18 +236,23 @@
             return new CardRequestResult(request, cardCount);
         }
 
-        private IEnumerable<Values> WithdrawBooksFound(IPlayer player) {
-            var booksFound = new List<Values>();
-            var valuesInHand = player.Cards.Select(c => c.Value).Distinct().ToList();
-            valuesInHand.ForEach(v => {
-                if (player.Cards.Count(c => c.Value == v) == 4) {
+        private IEnumerable<WithdrawnBooksRecord> WithdrawBooksFound(IPlayer player) {
+
+            var valuesToBeRemoved = player
+                .Cards
+                .GroupBy(c => c.Value)
+                .Where(g => g.Count() == 4)
+                .Select(g => g.Key)
+                .ToList();
+
+            valuesToBeRemoved
+                .ForEach(v => {
                     var cardsToKeep = player.Cards.Where(c => c.Value != v).ToArray();
                     player.Cards.Clear();
                     player.Cards.AddRange(cardsToKeep);
-                    booksFound.Add(v);
-                }
-            });
-            return booksFound;
+                });
+
+            return valuesToBeRemoved.Select(b => new WithdrawnBooksRecord(player, b)).ToArray();
         }
 
         private string ConstructInfoStringForCardRequest(CardRequestResult result) {
@@ -264,10 +269,13 @@
             return sb.ToString();
         }
 
-        private string ConstructInfoStringForBooksFound(IPlayer player, IEnumerable<Values> books) {
-            if (books.Count() == 0) return "";
+        private string ConstructInfoStringForBooksFound(IEnumerable<WithdrawnBooksRecord> booksRecord) {
+            if (booksRecord.Count() == 0) return "";
 
-            return string.Join("\r\n", books.Select(b => $"{player.Name} lays down book of {Card.Plural(b)}.")) + "\r\n";
+            return string.Join("\r\n",
+                booksRecord.Select(b =>
+                    $"{b.Player.Name} lays down book of {Card.Plural(b.Value)}.")
+                ) + "\r\n";
         }
 
         private string ConstructInfoStringForCardsWithdrawnFromDeck(IEnumerable<DeckWithdrawalResult> results) {
@@ -275,9 +283,8 @@
 
             return string.Join("\r\n",
                 results.Select(r =>
-                    $"{r.Player.Name} draws {r.CardCount} card{(r.CardCount == 1 ? "" : "s")} from deck."
-                )) + "\r\n";
-
+                    $"{r.Player.Name} draws {r.CardCount} card{(r.CardCount == 1 ? "" : "s")} from deck.")
+                ) + "\r\n";
         }
 
     }
