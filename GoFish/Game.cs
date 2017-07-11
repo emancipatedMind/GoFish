@@ -171,33 +171,39 @@
             var status = new List<(string, string, string)>();
 
             int skipAmount = 0;
-            bool moreCardsToBeDealt = true;
 
             automatedPlayers.ForEach(p => {
                 if (p.Cards.Count == 0) return;
 
-                CardRequest request = p.MakeRequest(playersWithCards);
-                var result = MakeCardRequest(request);
+                var result = MakeCardRequest(p.MakeRequest(playersWithCards));
 
-                var booksWithdrawn = WithdrawBooksFound(p);
-
-                var deckWithDrawalResults = CheckIfCardsNeedToBeDrawnFromDeck(result, deck.Skip(skipAmount).ToArray());
-
-                if (moreCardsToBeDealt && deckWithDrawalResults.Any()) {
-                    // These two lines are different. They should have the name changed to avoid confusion.
-                    skipAmount += deckWithDrawalResults.Select(r => r.CardCount).Aggregate((prev, next) => prev + next);
-                    moreCardsToBeDealt = skipAmount < deck.Count();
-                }
-
-                status.Add((
-                    ConstructInfoStringForCardRequest(result),
-                    ConstructInfoStringForBooksFound(booksWithdrawn),
-                    ConstructInfoStringForCardsWithdrawnFromDeck(deckWithDrawalResults)
-                ));
+                (var newDeck, var booksWithdrawn, var deckWithDrawalResults) =
+                PostRequestActions(result, deck);
 
             });
 
             return (deck.Skip(skipAmount).ToArray(), status);
+        }
+
+        private (IEnumerable<Card>, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalResult>) PostRequestActions(CardRequestResult result, IEnumerable<Card> deck) {
+
+            var deckWithdrawalResults = CheckIfCardsNeedToBeDrawnFromDeck(result, deck.ToArray());
+
+            var booksWithdrawn =
+                WithdrawBooksFound(new IPlayer[] {
+                    result.Requester,
+                    result.Requestee,
+                });
+
+            if (booksWithdrawn.Any() && deckWithdrawalResults.Any()) {
+
+                (var newdeck, var newBooks, var newResults) =
+                    PostRequestActions(result, deck.Skip(
+                        deckWithdrawalResults.Select(r => r.CardCount).Aggregate((prev, next) => prev + next)
+                    ));
+                return (newdeck, booksWithdrawn.Concat(newBooks), deckWithdrawalResults.Concat(newResults));
+            }
+            return (deck, booksWithdrawn, deckWithdrawalResults);
         }
 
         private IEnumerable<DeckWithdrawalResult> CheckIfCardsNeedToBeDrawnFromDeck(CardRequestResult request, IEnumerable<Card> deck) {
@@ -234,23 +240,24 @@
             return new CardRequestResult(request, cardCount);
         }
 
-        private IEnumerable<WithdrawnBooksRecord> WithdrawBooksFound(IPlayer player) {
+        private IEnumerable<WithdrawnBooksRecord> WithdrawBooksFound(IEnumerable<IPlayer> players) {
+            return players.SelectMany(p => {
+                var valuesToBeRemoved = p
+                    .Cards
+                    .GroupBy(c => c.Value)
+                    .Where(g => g.Count() == 4)
+                    .Select(g => g.Key)
+                    .ToList();
 
-            var valuesToBeRemoved = player
-                .Cards
-                .GroupBy(c => c.Value)
-                .Where(g => g.Count() == 4)
-                .Select(g => g.Key)
-                .ToList();
+                valuesToBeRemoved
+                    .ForEach(v => {
+                        var cardsToKeep = p.Cards.Where(c => c.Value != v).ToArray();
+                        p.Cards.Clear();
+                        p.Cards.AddRange(cardsToKeep);
+                    });
 
-            valuesToBeRemoved
-                .ForEach(v => {
-                    var cardsToKeep = player.Cards.Where(c => c.Value != v).ToArray();
-                    player.Cards.Clear();
-                    player.Cards.AddRange(cardsToKeep);
-                });
-
-            return valuesToBeRemoved.Select(b => new WithdrawnBooksRecord(player, b)).ToArray();
+                return valuesToBeRemoved.Select(b => new WithdrawnBooksRecord(p, b)).ToArray();
+            });
         }
 
         private string ConstructInfoStringForCardRequest(CardRequestResult result) {
