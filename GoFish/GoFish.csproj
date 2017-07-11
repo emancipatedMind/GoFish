@@ -69,6 +69,7 @@
     <Compile Include="CardRequest.cs" />
     <Compile Include="CardRequestResult.cs" />
     <Compile Include="ComputerPlayer.cs" />
+    <Compile Include="DeckWithdrawalResult.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="IAutomatedPlayer.cs" />
     <Compile Include="IPlayer.cs" />
