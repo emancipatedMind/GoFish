@@ -17,23 +17,24 @@
 
         public Game() {
             Players.Add(new Player("Peter"));
-            Players.Add(new Player("Melvin"));
-            Players.Add(new Player("John"));
-            Players.Add(new Player("Raymond"));
+            Players.Add(new ComputerPlayer(new Player("Melvin")));
+            Players.Add(new ComputerPlayer(new Player("John")));
+            Players.Add(new ComputerPlayer(new Player("Raymond")));
 
             User = new UserViewModel(Players.First());
             ComputerPlayers.AddRange(Players.Skip(1).Select(p => new ComputerPlayerViewModel(p)));
 
             StartGame = new DelegateCommand(StartGameCallback);
-            RequestCard = new DelegateCommand(RequestCardCallback);
+            PlayRound = new DelegateCommand(PlayRoundCallback);
         }
 
         List<IPlayer> Players { get; } = new List<IPlayer>();
 
         public UserViewModel User { get; }
         public List<ComputerPlayerViewModel> ComputerPlayers { get; } = new List<ComputerPlayerViewModel>();
-        public DelegateCommand StartGame { get; }
         public DelegateCommand RequestCard { get; }
+        public DelegateCommand StartGame { get; }
+        public DelegateCommand PlayRound { get; }
 
         public Card? SelectedCard {
             get => _selectedCard;
@@ -81,45 +82,75 @@
             }
         }
 
-        private void RequestCardCallback() {
+        private void StartGameCallback() {
+            GameIdle = false;
+            Books = "";
+            _roundNumber = 0;
+            Deal();
+            User.SortHand();
+        }
 
-            if (SelectedCard == null || SelectedPlayer == null) {
+        private bool PlayerCardNeeded =>
+            PlayerStillInGame &&
+                (SelectedCard == null || SelectedPlayer == null);
+
+        private bool PlayerStillInGame =>
+            Players.First().Cards.Count > 0;
+
+        private void PlayRoundCallback() {
+
+            var allStatuses = new List<(string GameProgressString, string BooksString, string CardsDealtString)>();
+
+            int cardWithDrawnCount = 0;
+
+            if (PlayerCardNeeded) {
                 FireNotifyEvent("Please select both a card to ask for, and the person to ask.");
                 return;
             }
 
             GameProgress = $"********** Round #{++_roundNumber} **********\r\n";
 
-            var playerRequest = new CardRequest(Players.First(), Players.Single(p => p == SelectedPlayer.Player), SelectedCard.Value.Value);
+            if (PlayerStillInGame) {
+                var playerRequest = new CardRequest(Players.First(), Players.Single(p => p == SelectedPlayer.Player), SelectedCard.Value.Value);
 
-            (CardRequestResult playerResponse, var deck) = MakeCardRequest(playerRequest, Cards);
-            GameProgress += ConstructInfoStringForCardRequest(playerResponse, Cards.Count);
+                int cardsTransferred = MakeCardRequest(playerRequest);
+                var playerResponse = new CardRequestResult(playerRequest, cardsTransferred);
 
-            var booksWithdrawnPlayer = WithdrawBooksFound(Players.First());
-            string booksWithdrawnStringPlayer = ConstructInfoStringForBooksFound(Players.First(), booksWithdrawnPlayer);
-            GameProgress += booksWithdrawnStringPlayer;
-            Books += booksWithdrawnStringPlayer;
+                IEnumerable<DeckWithdrawalResult> deckWithDrawalResults = CheckIfCardsNeedToBeDrawnFromDeck(playerResponse, Cards);
 
-            int playerCountDecremented = Players.Count - 1;
+                try {
+                    cardWithDrawnCount = deckWithDrawalResults.Select(r => r.CardCount).Aggregate((prev, next) => prev + next);
+                }
+                catch(InvalidOperationException) { }
 
-            deck = ComputerPlayersPlay(deck);
+                var booksWithdrawnPlayer = WithdrawBooksFound(Players.First());
+
+                allStatuses.Add((
+                    ConstructInfoStringForCardRequest(playerResponse),
+                    ConstructInfoStringForBooksFound(Players.First(), booksWithdrawnPlayer),
+                    ConstructInfoStringForCardsWithdrawnFromDeck(deckWithDrawalResults)
+                ));
+            }
+
+            (var deck, var status) = AutomatedPlay(Players, Cards.Skip(cardWithDrawnCount));
 
             Cards.Clear();
             Cards.AddRange(deck);
 
-            GameProgress += $"\r\nThe deck has {(Cards.Count == 1 ? "just 1 card" : $"{Cards.Count} cards") } left.";
+            allStatuses.AddRange(status);
+
+            allStatuses.ForEach(s => {
+                GameProgress += s.GameProgressString;
+                GameProgress += s.BooksString;
+                GameProgress += s.CardsDealtString;
+                Books += s.BooksString;
+            });
+
+            GameProgress += $"\r\nStock has {Cards.Count} card{(Cards.Count == 1 ? "" : "s")} remaining.";
 
             SelectedCard = null;
             SelectedPlayer = null;
 
-            User.SortHand();
-        }
-
-        private void StartGameCallback() {
-            GameIdle = false;
-            Books = "";
-            _roundNumber = 0;
-            Deal();
             User.SortHand();
         }
 
@@ -133,42 +164,77 @@
             Cards.AddRange(cards.Skip(Players.Count * DealAmount));
         }
 
-        private IEnumerable<Card> ComputerPlayersPlay(IEnumerable<Card> deck) {
-            int playerCountDecremented = Players.Skip(1).Count();
-            Players.Skip(1).ToList().ForEach(p => {
-                if (p.Cards.Count() == 0) return;
+        private (IEnumerable<Card> Deck, IEnumerable<(string GameProgressString, string BooksString, string CardsDealtString)> Status) AutomatedPlay(IEnumerable<IPlayer> players, IEnumerable<Card> deck) {
 
-                IPlayer requestee = Players.Where(pl => pl != p).Where(pl => pl.Cards.Count() != 0).ElementAt(randomizer.Next(playerCountDecremented));
-                Values rank = p.Cards.ElementAt(randomizer.Next(p.Cards.Count)).Value;
+            IEnumerable<IPlayer> playersWithCards = players.Where(p => p.Cards.Count() != 0);
+            List<IAutomatedPlayer> automatedPlayers = playersWithCards.OfType<IAutomatedPlayer>().ToList();
 
-                var request = new CardRequest(p, requestee, rank);
-                (CardRequestResult response, var newDeck) = MakeCardRequest(request, deck);
-                GameProgress += ConstructInfoStringForCardRequest(response, deck.Count());
-                deck = newDeck.ToArray();
+            var status = new List<(string, string, string)>();
+
+            int skipAmount = 0;
+            bool moreCardsToBeDealt = true;
+
+            automatedPlayers.ForEach(p => {
+                if (p.Cards.Count == 0) return;
+
+                CardRequest request = p.MakeRequest(playersWithCards);
+                int cardsTransferred = MakeCardRequest(request);
+                var result = new CardRequestResult(request, cardsTransferred);
 
                 var booksWithdrawn = WithdrawBooksFound(p);
-                string booksWithdrawnString = ConstructInfoStringForBooksFound(p, booksWithdrawn);
-                GameProgress += booksWithdrawnString;
-                Books += booksWithdrawnString;
+
+                var deckWithDrawalResults = CheckIfCardsNeedToBeDrawnFromDeck(result, deck.Skip(skipAmount).ToArray());
+
+                if (moreCardsToBeDealt) {
+                // These two lines are different. They should have the name changed to avoid confusion.
+                    if (request.Requestee.Cards.Count == 0) skipAmount += 5;
+                    if (request.Requester.Cards.Count == 0) skipAmount += 5;
+                    if (cardsTransferred == 0) skipAmount += 1;
+                    moreCardsToBeDealt = skipAmount < deck.Count();
+                }
+
+                status.Add((
+                    ConstructInfoStringForCardRequest(result),
+                    ConstructInfoStringForBooksFound(p, booksWithdrawn),
+                    ConstructInfoStringForCardsWithdrawnFromDeck(deckWithDrawalResults)
+                ));
+
             });
-            return deck;
+
+            return (deck.Skip(skipAmount).ToArray(), status);
         }
 
-        private (CardRequestResult result, IEnumerable<Card> newDeck) MakeCardRequest(CardRequest request, IEnumerable<Card> deck) {
-            int cardCount = request.Requestee.Cards.Count(c => c.Value == request.Rank);
-
-            if (cardCount == 0) {
-                if (deck.Count() == 0) return (new CardRequestResult(request, cardCount), new Card[0]);
-                request.Requester.Cards.AddRange(deck.Take(1));
-                return (new CardRequestResult(request, cardCount), deck.Skip(1));
+        private IEnumerable<DeckWithdrawalResult> CheckIfCardsNeedToBeDrawnFromDeck(CardRequestResult request, IEnumerable<Card> deck) {
+            if (deck.Count() == 0) return new DeckWithdrawalResult[0];
+            var results = new List<DeckWithdrawalResult>();
+            if (request.Requestee.Cards.Count == 0) {
+                request.Requestee.Cards.AddRange(deck.Take(5));
+                results.Add(new DeckWithdrawalResult(request.Requestee, 5));
             }
 
-            Card[] cardsToHandOver = request.Requestee.Cards.Where(c => c.Value == request.Rank).ToArray();
-            Card[] cardsToKeep = request.Requestee.Cards.Where(c => c.Value != request.Rank).ToArray();
-            request.Requestee.Cards.Clear();
-            request.Requestee.Cards.AddRange(cardsToKeep);
-            request.Requester.Cards.AddRange(cardsToHandOver);
-            return (new CardRequestResult(request, cardCount), deck);
+            if (request.ExchangeCount == 0) {
+                request.Requester.Cards.AddRange(deck.Take(1));
+                results.Add(new DeckWithdrawalResult(request.Requester, 1));
+            }
+            else if (request.Requester.Cards.Count == 0) {
+                request.Requester.Cards.AddRange(deck.Take(5));
+                results.Add(new DeckWithdrawalResult(request.Requester, 5));
+            }
+            return results;
+        }
+
+        private int MakeCardRequest(CardRequest request) {
+            int cardCount = request.Requestee.Cards.Count(c => c.Value == request.Rank);
+
+            if (cardCount != 0) {
+                Card[] cardsToHandOver = request.Requestee.Cards.Where(c => c.Value == request.Rank).ToArray();
+                Card[] cardsToKeep = request.Requestee.Cards.Where(c => c.Value != request.Rank).ToArray();
+                request.Requestee.Cards.Clear();
+                request.Requestee.Cards.AddRange(cardsToKeep);
+                request.Requester.Cards.AddRange(cardsToHandOver);
+            }
+
+            return cardCount;
         }
 
         private IEnumerable<Values> WithdrawBooksFound(IPlayer player) {
@@ -185,7 +251,7 @@
             return booksFound;
         }
 
-        private string ConstructInfoStringForCardRequest(CardRequestResult result, int deckCountBeforeRequest) {
+        private string ConstructInfoStringForCardRequest(CardRequestResult result) {
             var sb = new StringBuilder();
             string pluralRankText = Card.Plural(result.Rank);
             sb.AppendLine();
@@ -195,15 +261,24 @@
             }
             else {
                 sb.AppendLine($"{result.Requestee.Name} says, \"Go fish.\"");
-                if (deckCountBeforeRequest != 0) sb.AppendLine($"{result.Requester.Name} takes one card from deck.");
             }
             return sb.ToString();
         }
 
         private string ConstructInfoStringForBooksFound(IPlayer player, IEnumerable<Values> books) {
             if (books.Count() == 0) return "";
-            books.Select(b => $"{player.Name} lays down book of {Card.Plural(b)}.");
+
             return string.Join("\r\n", books.Select(b => $"{player.Name} lays down book of {Card.Plural(b)}.")) + "\r\n";
+        }
+
+        private string ConstructInfoStringForCardsWithdrawnFromDeck(IEnumerable<DeckWithdrawalResult> results) {
+            if (results.Count() == 0) return "";
+
+            return string.Join("\r\n",
+                results.Select(r =>
+                    $"{r.Player.Name} draws {r.CardCount} card{(r.CardCount == 1 ? "" : "s")} from deck."
+                )) + "\r\n";
+
         }
 
     }
