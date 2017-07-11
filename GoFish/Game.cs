@@ -183,11 +183,9 @@
 
                 var deckWithDrawalResults = CheckIfCardsNeedToBeDrawnFromDeck(result, deck.Skip(skipAmount).ToArray());
 
-                if (moreCardsToBeDealt) {
-                // These two lines are different. They should have the name changed to avoid confusion.
-                    if (request.Requestee.Cards.Count == 0) skipAmount += 5;
-                    if (request.Requester.Cards.Count == 0) skipAmount += 5;
-                    if (result.ExchangeCount == 0) skipAmount += 1;
+                if (moreCardsToBeDealt && deckWithDrawalResults.Any()) {
+                    // These two lines are different. They should have the name changed to avoid confusion.
+                    skipAmount += deckWithDrawalResults.Select(r => r.CardCount).Aggregate((prev, next) => prev + next);
                     moreCardsToBeDealt = skipAmount < deck.Count();
                 }
 
