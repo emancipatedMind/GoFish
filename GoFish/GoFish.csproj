@@ -74,6 +74,7 @@
     <Compile Include="IAutomatedPlayer.cs" />
     <Compile Include="IPlayer.cs" />
     <Compile Include="UserViewModel.cs" />
+    <Compile Include="WithdrawnBooksRecord.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
