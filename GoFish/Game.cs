@@ -113,8 +113,7 @@
             if (PlayerStillInGame) {
                 var playerRequest = new CardRequest(Players.First(), Players.Single(p => p == SelectedPlayer.Player), SelectedCard.Value.Value);
 
-                int cardsTransferred = MakeCardRequest(playerRequest);
-                var playerResponse = new CardRequestResult(playerRequest, cardsTransferred);
+                var playerResponse = MakeCardRequest(playerRequest);
 
                 IEnumerable<DeckWithdrawalResult> deckWithDrawalResults = CheckIfCardsNeedToBeDrawnFromDeck(playerResponse, Cards);
 
@@ -178,8 +177,7 @@
                 if (p.Cards.Count == 0) return;
 
                 CardRequest request = p.MakeRequest(playersWithCards);
-                int cardsTransferred = MakeCardRequest(request);
-                var result = new CardRequestResult(request, cardsTransferred);
+                var result = MakeCardRequest(request);
 
                 var booksWithdrawn = WithdrawBooksFound(p);
 
@@ -189,7 +187,7 @@
                 // These two lines are different. They should have the name changed to avoid confusion.
                     if (request.Requestee.Cards.Count == 0) skipAmount += 5;
                     if (request.Requester.Cards.Count == 0) skipAmount += 5;
-                    if (cardsTransferred == 0) skipAmount += 1;
+                    if (result.ExchangeCount == 0) skipAmount += 1;
                     moreCardsToBeDealt = skipAmount < deck.Count();
                 }
 
@@ -206,6 +204,7 @@
 
         private IEnumerable<DeckWithdrawalResult> CheckIfCardsNeedToBeDrawnFromDeck(CardRequestResult request, IEnumerable<Card> deck) {
             if (deck.Count() == 0) return new DeckWithdrawalResult[0];
+
             var results = new List<DeckWithdrawalResult>();
             if (request.Requestee.Cards.Count == 0) {
                 request.Requestee.Cards.AddRange(deck.Take(5));
@@ -223,7 +222,7 @@
             return results;
         }
 
-        private int MakeCardRequest(CardRequest request) {
+        private CardRequestResult MakeCardRequest(CardRequest request) {
             int cardCount = request.Requestee.Cards.Count(c => c.Value == request.Rank);
 
             if (cardCount != 0) {
@@ -234,7 +233,7 @@
                 request.Requester.Cards.AddRange(cardsToHandOver);
             }
 
-            return cardCount;
+            return new CardRequestResult(request, cardCount);
         }
 
         private IEnumerable<Values> WithdrawBooksFound(IPlayer player) {
