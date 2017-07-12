@@ -67,11 +67,14 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="CardRequest.cs" />
+    <Compile Include="CardRequestedEventArgs.cs" />
     <Compile Include="CardRequestResult.cs" />
+    <Compile Include="User.cs" />
     <Compile Include="ComputerPlayer.cs" />
-    <Compile Include="DeckWithdrawalResult.cs" />
+    <Compile Include="DeckWithdrawalRecord.cs" />
     <Compile Include="Game.cs" />
     <Compile Include="IAutomatedPlayer.cs" />
+    <Compile Include="IManualPlayer.cs" />
     <Compile Include="IPlayer.cs" />
     <Compile Include="UserViewModel.cs" />
     <Compile Include="WithdrawnBooksRecord.cs" />

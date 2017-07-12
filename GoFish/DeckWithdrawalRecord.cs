@@ -1,10 +1,10 @@
 ﻿namespace GoFish {
-    public struct DeckWithdrawalResult {
+    public struct DeckWithdrawalRecord {
 
         public IPlayer Player { get; }
         public int CardCount { get; }
 
-        public DeckWithdrawalResult(IPlayer player, int cardCount) : this() {
+        public DeckWithdrawalRecord(IPlayer player, int cardCount) : this() {
             Player = player;
             CardCount = cardCount;
         }
