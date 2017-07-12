@@ -13,6 +13,7 @@
         Card? _selectedCard;
         ComputerPlayerViewModel _selectedPlayer;
         bool _gameIdle = true;
+        bool _roundInProgress = false;
         string _gameProgress = "";
         string _books = "";
         int _roundNumber = 0;
@@ -84,6 +85,15 @@
             }
         }
 
+        public bool RoundInProgress {
+            get => _roundInProgress;
+            set {
+                if (_roundInProgress == value) return;
+                _roundInProgress = value;
+                OnPropertyChanged(nameof(RoundInProgress));
+            }
+        }
+
         int DealAmount { get; set; } = 5;
         List<Card> Cards { get; } = new List<Card>();
 
@@ -126,6 +136,8 @@
 
         private void PlayRoundCallback() {
 
+            RoundInProgress = true;
+
             GameProgress = $"********** Round #{++_roundNumber} **********\r\n";
 
             var results = Play(Players, 0, Cards);
@@ -139,6 +151,8 @@
             GameProgress += $"\r\nStock has {Cards.Count} card{(Cards.Count == 1 ? "" : "s")} remaining.";
 
             User.SortHand();
+
+            RoundInProgress = false;
         }
 
         private void Deal() {
