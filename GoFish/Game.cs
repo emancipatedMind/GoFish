@@ -5,6 +5,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Text;
+    using System.Threading.Tasks;
     using ToolkitNFW4.XAML;
     public class Game : EntityBase {
 
@@ -45,7 +46,7 @@
             ComputerPlayers.AddRange(Players.Skip(1).Select(p => new ComputerPlayerViewModel(p)));
 
             StartGame = new DelegateCommand(StartGameCallback);
-            PlayRound = new DelegateCommand(PlayRoundCallback);
+            PlayRound = new AwaitableDelegateCommand(() => Task.Factory.StartNew(PlayRoundCallback));
             RequestCard = new DelegateCommand(RequestCardCallback);
         }
 
@@ -55,7 +56,7 @@
         public List<ComputerPlayerViewModel> ComputerPlayers { get; } = new List<ComputerPlayerViewModel>();
         public DelegateCommand RequestCard { get; }
         public DelegateCommand StartGame { get; }
-        public DelegateCommand PlayRound { get; }
+        public AwaitableDelegateCommand PlayRound { get; }
 
 
         public Card? SelectedCard {
@@ -127,12 +128,10 @@
 
             GameProgress = $"********** Round #{++_roundNumber} **********\r\n";
 
-            var results = AutomatedPlay(Players, Cards);
+            var results = Play(Players, 0, Cards);
 
             if (results.SelectMany(r=> r.StockWithdrawalRecords).Any()) {
-                int cardsDealtCount = results.SelectMany(r => r.StockWithdrawalRecords).Select(r => r.CardCount).Aggregate((prev, next) => prev + next);
-
-                var cards = Cards.Skip(cardsDealtCount).ToArray();
+                var cards = Cards.Skip(GetSkipCount(results.SelectMany(r => r.StockWithdrawalRecords))).ToArray();
                 Cards.Clear();
                 Cards.AddRange(cards);
             }
@@ -152,23 +151,15 @@
             Cards.AddRange(cards.Skip(Players.Count * DealAmount));
         }
 
-        private (CardRequestResult RequestResult, IEnumerable<WithdrawnBooksRecord> Books, IEnumerable<DeckWithdrawalRecord> StockWithdrawalRecords)[] AutomatedPlay(IEnumerable<IPlayer> players, IEnumerable<Card> deck) {
-
-            return players.Select(p => {
-                (var crr, var wbr, var dwr) = PlayHand(p, players, deck);
-                Log((crr, wbr, dwr));
-                return (crr, wbr, dwr);
-            }).ToArray();
-
-        }
-
-        private (CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>) PlayHand(IPlayer player, IEnumerable<IPlayer> allPlayers, IEnumerable<Card> deck) {
+        private List<(CardRequestResult RequestResult, IEnumerable<WithdrawnBooksRecord> Books, IEnumerable<DeckWithdrawalRecord> StockWithdrawalRecords)> Play(IEnumerable<IPlayer> allPlayers, int currPlayerIndex, IEnumerable<Card> deck) {
             CardRequest request;
+            IPlayer player = allPlayers.ElementAt(currPlayerIndex);
+            int nextPlayerIndex = currPlayerIndex + 1;
             if (typeof(IAutomatedPlayer).IsAssignableFrom(player.GetType())) {
                 request = ((IAutomatedPlayer)player).MakeRequest(allPlayers.Where(p => p.Cards.Any()));
             }
             else if (typeof(IManualPlayer).IsAssignableFrom(player.GetType())) {
-                Log("It is your turn.");
+                Log("\r\nIt is your turn.");
                 request = ((IManualPlayer)player).MakeRequest();
             }
             else throw new ArgumentException("Player is of unknown type. Does not implement necessary interface.");
@@ -177,7 +168,17 @@
 
             (var books, var deckWithdrawalResults) = PostRequestActions(result, deck);
 
-            return (result, books, deckWithdrawalResults);
+            var resultList = new List<(CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>)> {
+                (result, books, deckWithdrawalResults)
+            };
+
+            Log((result, books, deckWithdrawalResults));
+
+            if (nextPlayerIndex < allPlayers.Count()) {
+                resultList.AddRange(Play(allPlayers, nextPlayerIndex, deck.Skip(GetSkipCount(deckWithdrawalResults)).ToArray()));
+            }
+
+            return resultList;
         }
 
         private (IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>) PostRequestActions(CardRequestResult result, IEnumerable<Card> deck) {
@@ -194,14 +195,13 @@
 
                 (var newBooks, var newResults) =
                     PostRequestActions(result, deck.Skip(
-                        deckWithdrawalResults.Select(r => r.CardCount).Aggregate((prev, next) => prev + next)
+                        GetSkipCount(deckWithdrawalResults)
                     ));
                 return (booksWithdrawn.Concat(newBooks), deckWithdrawalResults.Concat(newResults));
             }
             return (booksWithdrawn, deckWithdrawalResults);
         }
 
-        // Problematic. This could potentially serve the same cards.
         private List<DeckWithdrawalRecord> CheckIfCardsNeedToBeDrawnFromDeck(CardRequestResult request, IEnumerable<Card> deck) {
             var results = new List<DeckWithdrawalRecord>();
 
@@ -260,6 +260,11 @@
             })
             .ToArray();
         }
+
+        private int GetSkipCount(IEnumerable<DeckWithdrawalRecord> records) =>
+                records.Any() ?
+                records.Select(r => r.CardCount).Aggregate((prev, next) => prev + next) :
+                0;
 
         #region Log
         private void Log((CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>) info) {
