@@ -176,27 +176,31 @@
             CardRequest request;
             IPlayer player = allPlayers.ElementAt(currPlayerIndex);
             int nextPlayerIndex = currPlayerIndex + 1;
-            if (typeof(IAutomatedPlayer).IsAssignableFrom(player.GetType())) {
-                request = ((IAutomatedPlayer)player).MakeRequest(allPlayers.Where(p => p.Cards.Any()));
+            int skipAmount = 0;
+            var resultList = new List<(CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>)>() ;
+            if(player.Cards.Any()) {
+                if (typeof(IAutomatedPlayer).IsAssignableFrom(player.GetType())) {
+                    request = ((IAutomatedPlayer)player).MakeRequest(allPlayers.Where(p => p.Cards.Any()));
+                }
+                else if (typeof(IManualPlayer).IsAssignableFrom(player.GetType())) {
+                    Log("\r\nIt is your turn.");
+                    request = ((IManualPlayer)player).MakeRequest();
+                }
+                else throw new ArgumentException("Player is of unknown type. Does not implement necessary interface.");
+
+                var result = MakeCardRequest(request);
+
+                (var books, var deckWithdrawalResults) = PostRequestActions(result, deck);
+
+                resultList.Add((result, books, deckWithdrawalResults));
+
+                Log((result, books, deckWithdrawalResults));
+
+                skipAmount = GetSkipCount(deckWithdrawalResults);
             }
-            else if (typeof(IManualPlayer).IsAssignableFrom(player.GetType())) {
-                Log("\r\nIt is your turn.");
-                request = ((IManualPlayer)player).MakeRequest();
-            }
-            else throw new ArgumentException("Player is of unknown type. Does not implement necessary interface.");
-
-            var result = MakeCardRequest(request);
-
-            (var books, var deckWithdrawalResults) = PostRequestActions(result, deck);
-
-            var resultList = new List<(CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>)> {
-                (result, books, deckWithdrawalResults)
-            };
-
-            Log((result, books, deckWithdrawalResults));
 
             if (nextPlayerIndex < allPlayers.Count()) {
-                resultList.AddRange(Play(allPlayers, nextPlayerIndex, deck.Skip(GetSkipCount(deckWithdrawalResults)).ToArray()));
+                resultList.AddRange(Play(allPlayers, nextPlayerIndex, deck.Skip(skipAmount).ToArray()));
             }
 
             return resultList;
