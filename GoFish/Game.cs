@@ -162,6 +162,11 @@
                 var winner = sortedWinnerList.Last();
 
                 Log($"\r\n\r\n{winner.Player.Name} is our winner with {winner.Count} books.");
+
+                var firstPlayer = Players.Take(1).ToArray();
+                var restOfPlayers = Players.Skip(1).ToArray();
+                Players.Clear();
+                Players.AddRange(restOfPlayers.Concat(firstPlayer));
             }
         }
 
