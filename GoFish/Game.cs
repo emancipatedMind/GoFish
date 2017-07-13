@@ -44,7 +44,7 @@
             Players.Add(new ComputerPlayer(new Player("John")));
             Players.Add(new ComputerPlayer(new Player("Raymond")));
 
-            User = new UserViewModel(Players.First());
+            User = new UserViewModel(user);
             ComputerPlayers.AddRange(Players.Skip(1).Select(p => new ComputerPlayerViewModel(p)));
 
             StartGame = new DelegateCommand(StartGameCallback);
@@ -202,9 +202,10 @@
                 if (typeof(IAutomatedPlayer).IsAssignableFrom(player.GetType())) {
                     request = ((IAutomatedPlayer)player).MakeRequest(allPlayers);
                 }
-                else if (typeof(IManualPlayer).IsAssignableFrom(player.GetType())) {
+                else if (typeof(IManualCardRequester).IsAssignableFrom(player.GetType())) {
+                    (player as ISortingPlayer)?.SortCards();
                     Log("\r\nIt is your turn. Select a card.");
-                    request = ((IManualPlayer)player).MakeRequest();
+                    request = ((IManualCardRequester)player).MakeRequest();
                 }
                 else throw new ArgumentException("Player is of unknown type. Does not implement necessary interface.");
 

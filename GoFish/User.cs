@@ -5,7 +5,7 @@
     using PlayingCards;
     using ToolkitNFW4.XAML;
 
-    public class User : IManualPlayer {
+    public class User : ISortingPlayer, IManualCardRequester {
         private IPlayer _player;
 
         Random randomizer = new Random();
@@ -25,7 +25,10 @@
             return new CardRequest(this, cardRequestedEA.Player, cardRequestedEA.Card.Value);
         }
 
+        public void SortCards() => SortRequested?.Invoke(this, EventArgs.Empty);
+
         public event EventHandler<CardRequestedEventArgs> CardRequested;
+        public event EventHandler SortRequested;
 
     }
 }

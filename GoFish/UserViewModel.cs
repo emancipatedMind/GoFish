@@ -6,13 +6,14 @@
     using System.Threading;
     public class UserViewModel {
 
-        private IPlayer _user;
+        private ISortingPlayer _user;
         private SynchronizationContext _context;
 
-        public UserViewModel(IPlayer user) {
+        public UserViewModel(ISortingPlayer user) {
             _user = user;
             _user.Cards.CollectionAddedTo += Cards_CollectionAddedTo;
             _user.Cards.CollectionCleared += Cards_CollectionCleared;
+            _user.SortRequested += (s, e) => SortHand();
             _context = SynchronizationContext.Current;
         }
 

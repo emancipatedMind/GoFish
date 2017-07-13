@@ -1,6 +1,6 @@
 ﻿namespace GoFish {
     using System;
-    public interface IManualPlayer : IPlayer {
+    public interface IManualCardRequester {
         CardRequest MakeRequest();
     }
 }
