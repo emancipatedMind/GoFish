@@ -316,8 +316,8 @@
         #region Log
         private void Log((CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>) info) {
             Log(info.Item1);
-            Log(info.Item2);
             Log(info.Item3);
+            Log(info.Item2);
         }
 
         private void Log(CardRequestResult result) {
