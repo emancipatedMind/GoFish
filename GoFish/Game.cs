@@ -271,7 +271,7 @@
 
                 if (request.Requestee.Cards.Count == 0) {
                     request.Requestee.Cards.AddRange(deck.Take(DealAmount));
-                    results.Add(new DeckWithdrawalRecord(request.Requestee, DealAmount));
+                    results.Add(new DeckWithdrawalRecord(request.Requestee, deck.Take(DealAmount).Count()));
                     skipAmount = DealAmount;
                 }
 
@@ -281,7 +281,7 @@
                 }
                 else if (request.Requester.Cards.Count == 0) {
                     request.Requester.Cards.AddRange(deck.Skip(skipAmount).Take(DealAmount));
-                    results.Add(new DeckWithdrawalRecord(request.Requester, DealAmount));
+                    results.Add(new DeckWithdrawalRecord(request.Requester, deck.Take(DealAmount).Count()));
                 }
             }
             return results;
