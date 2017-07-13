@@ -116,6 +116,10 @@
         }
 
         private void StartGameCallback() {
+            Players
+                .OfType<IAutomatedPlayer>()
+                .ToList()
+                .ForEach(p => p.ClearMemory());
             GameProgress = "";
             GameIdle = false;
             Books.Clear();
@@ -191,6 +195,12 @@
             var resultList = new List<List<(CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>)>> {
                 playerResults
             };
+
+            allPlayers
+                .OfType<IAutomatedPlayer>()
+                .Where(p => p.Cards.Any())
+                .ToList()
+                .ForEach(p => p.CommitRoundToMemory(playerResults.Select(r => r.RequestResult).ToArray()));
 
             if (nextPlayerIndex < allPlayers.Count()) {
                 resultList.AddRange(Play(allPlayers, nextPlayerIndex, deck.Skip(skipAmount).ToArray()));
