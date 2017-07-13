@@ -275,14 +275,16 @@
                     skipAmount = DealAmount;
                 }
 
-                if (request.ExchangeCount == 0 && requiredDraw) {
-                    request.Requester.Cards.AddRange(deck.Skip(skipAmount).Take(1));
-                    results.Add(new DeckWithdrawalRecord(request.Requester, 1));
-                }
-                else if (request.Requester.Cards.Count == 0) {
-                    request.Requester.Cards.AddRange(deck.Skip(skipAmount).Take(DealAmount));
-                    results.Add(new DeckWithdrawalRecord(request.Requester, deck.Take(DealAmount).Count()));
-                }
+                if (deck.Skip(skipAmount).Any()) {
+                    if (request.ExchangeCount == 0 && requiredDraw) {
+                        request.Requester.Cards.AddRange(deck.Skip(skipAmount).Take(1));
+                        results.Add(new DeckWithdrawalRecord(request.Requester, 1));
+                    }
+                    else if (request.Requester.Cards.Count == 0) {
+                        request.Requester.Cards.AddRange(deck.Skip(skipAmount).Take(DealAmount));
+                        results.Add(new DeckWithdrawalRecord(request.Requester, deck.Take(DealAmount).Count()));
+                    }
+                } 
             }
             return results;
         }
