@@ -153,8 +153,6 @@
 
             GameProgress += $"\r\nStock has {Cards.Count} card{(Cards.Count == 1 ? "" : "s")} remaining.";
 
-            User.SortHand();
-
             RoundInProgress = false;
             if (Books.Count == 13) {
                 GameIdle = true;
@@ -218,23 +216,27 @@
                     request = ((IAutomatedPlayer)player).MakeRequest(allPlayers);
                 }
                 else if (typeof(IManualCardRequester).IsAssignableFrom(player.GetType())) {
-                    (player as ISortingPlayer)?.SortCards();
-                    Log("\r\nIt is your turn. Select a card.");
+                    Log("\r\nIt is your turn. Select a card, and player.");
                     request = ((IManualCardRequester)player).MakeRequest();
                 }
                 else throw new ArgumentException("Player is of unknown type. Does not implement necessary interface.");
 
                 var result = MakeCardRequest(request);
-
                 (var books, var deckWithdrawalResults) = PostRequestActions(result, deck);
+                resultList.Add((result, books, deckWithdrawalResults));
+
+                new IPlayer[] {
+                    result.Requestee,
+                    result.Requester
+                }
+                .OfType<ISortingPlayer>()
+                .ToList()
+                .ForEach(p => p.SortCards());
 
                 Log((result, books, deckWithdrawalResults));
 
-                resultList.Add((result, books, deckWithdrawalResults));
-
-                int skipAmount = GetSkipCount(deckWithdrawalResults);
-
                 if (result.ExchangeCount != 0) {
+                    int skipAmount = GetSkipCount(deckWithdrawalResults);
                     resultList.AddRange(PlayerActions(player, allPlayers, deck.Skip(skipAmount).ToArray()));
                 }
             }
