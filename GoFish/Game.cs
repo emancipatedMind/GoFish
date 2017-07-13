@@ -3,6 +3,7 @@
     using PlayingCards;
     using System;
     using System.Collections.Generic;
+    using System.Collections.ObjectModel;
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
@@ -15,8 +16,8 @@
         bool _gameIdle = true;
         bool _roundInProgress = false;
         string _gameProgress = "";
-        string _books = "";
         int _roundNumber = 0;
+        private SynchronizationContext _context;
         AutoResetEvent _autoWaitHandle = new AutoResetEvent(false);
 
         public Game() {
@@ -49,6 +50,8 @@
             StartGame = new DelegateCommand(StartGameCallback);
             PlayRound = new AwaitableDelegateCommand(() => Task.Factory.StartNew(PlayRoundCallback));
             RequestCard = new DelegateCommand(RequestCardCallback);
+
+            _context = SynchronizationContext.Current;
         }
 
         List<IPlayer> Players { get; } = new List<IPlayer>();
@@ -106,14 +109,7 @@
             }
         }
 
-        public string Books {
-            get => _books;
-            set {
-                if (_books == value) return;
-                _books = value;
-                OnPropertyChanged(nameof(Books));
-            }
-        }
+        public ObservableCollection<WithdrawnBooksRecord> Books { get; } = new ObservableCollection<WithdrawnBooksRecord>();
 
         private void RequestCardCallback() {
             _autoWaitHandle.Set();
@@ -121,7 +117,7 @@
 
         private void StartGameCallback() {
             GameIdle = false;
-            Books = "";
+            Books.Clear();
             _roundNumber = 0;
             Deal();
             User.SortHand();
@@ -280,6 +276,9 @@
                 records.Select(r => r.CardCount).Aggregate((prev, next) => prev + next) :
                 0;
 
+        private void UseContext(Action<object> action) =>
+            _context.Send(o => action(o) , null);
+
         #region Log
         private void Log((CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>) info) {
             Log(info.Item1);
@@ -294,7 +293,11 @@
         private void Log(IEnumerable<WithdrawnBooksRecord> booksRecord) {
             string booksRecordString = ConstructLogString(booksRecord);
             GameProgress += booksRecordString;
-            Books += booksRecordString;
+            UseContext(_ =>
+                booksRecord
+                    .ToList()
+                    .ForEach(b => Books.Add(b))
+            );
         }
 
         private void Log(IEnumerable<DeckWithdrawalRecord> deckWithdrawalResults) {

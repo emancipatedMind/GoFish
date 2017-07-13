@@ -5,5 +5,6 @@
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <local:Game x:Key="game" />
+        <local:CardValueConverter x:Key="cardValueConverter" />
     </Application.Resources>
 </Application>

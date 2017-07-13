@@ -88,6 +88,7 @@
     <Compile Include="CardRequest.cs" />
     <Compile Include="CardRequestedEventArgs.cs" />
     <Compile Include="CardRequestResult.cs" />
+    <Compile Include="CardValueConverter.cs" />
     <Compile Include="User.cs" />
     <Compile Include="ComputerPlayer.cs" />
     <Compile Include="DeckWithdrawalRecord.cs" />
