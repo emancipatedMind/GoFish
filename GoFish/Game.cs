@@ -181,7 +181,7 @@
             var resultList = new List<(CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>)>() ;
             if(player.Cards.Any()) {
                 if (typeof(IAutomatedPlayer).IsAssignableFrom(player.GetType())) {
-                    request = ((IAutomatedPlayer)player).MakeRequest(allPlayers.Where(p => p.Cards.Any()));
+                    request = ((IAutomatedPlayer)player).MakeRequest(allPlayers);
                 }
                 else if (typeof(IManualPlayer).IsAssignableFrom(player.GetType())) {
                     Log("\r\nIt is your turn.");

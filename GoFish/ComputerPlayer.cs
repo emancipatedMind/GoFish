@@ -17,7 +17,7 @@
         public string Name { get => _player.Name; set => _player.Name = value; }
 
         public CardRequest MakeRequest(IEnumerable<IPlayer> players) {
-            IPlayer[] otherPlayers = players.Where(pl => pl != this && pl.Cards.Count() != 0).ToArray();
+            IPlayer[] otherPlayers = players.Where(pl => pl != this && pl.Cards.Any()).ToArray();
 
             IPlayer requestee = otherPlayers.ElementAt(randomizer.Next(otherPlayers.Count()));
             Values rank = Cards.ElementAt(randomizer.Next(Cards.Count)).Value;
