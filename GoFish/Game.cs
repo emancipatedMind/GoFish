@@ -139,8 +139,10 @@
 
             var results = Play(Players, 0, Cards);
 
-            if (results.SelectMany(r=> r.StockWithdrawalRecords).Any()) {
-                var cards = Cards.Skip(GetSkipCount(results.SelectMany(r => r.StockWithdrawalRecords))).ToArray();
+            var withdrawalRecords = results.SelectMany(r => r.SelectMany(re => re.StockWithdrawalRecords));
+
+            if (withdrawalRecords.Any()) {
+                var cards = Cards.Skip(GetSkipCount(withdrawalRecords)).ToArray();
                 Cards.Clear();
                 Cards.AddRange(cards);
             }
@@ -173,18 +175,35 @@
             Cards.AddRange(cards.Skip(Players.Count * DealAmount));
         }
 
-        private List<(CardRequestResult RequestResult, IEnumerable<WithdrawnBooksRecord> Books, IEnumerable<DeckWithdrawalRecord> StockWithdrawalRecords)> Play(IEnumerable<IPlayer> allPlayers, int currPlayerIndex, IEnumerable<Card> deck) {
-            CardRequest request;
+        private List<List<(CardRequestResult RequestResult, IEnumerable<WithdrawnBooksRecord> Books, IEnumerable<DeckWithdrawalRecord> StockWithdrawalRecords)>> Play(IEnumerable<IPlayer> allPlayers, int currPlayerIndex, IEnumerable<Card> deck) {
             IPlayer player = allPlayers.ElementAt(currPlayerIndex);
             int nextPlayerIndex = currPlayerIndex + 1;
-            int skipAmount = 0;
-            var resultList = new List<(CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>)>() ;
+
+            var playerResults = PlayerActions(player, allPlayers, deck);
+
+            int skipAmount = GetSkipCount(playerResults.SelectMany(r => r.StockWithdrawalRecords).ToArray());
+
+            var resultList = new List<List<(CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>)>> {
+                playerResults
+            };
+
+            if (nextPlayerIndex < allPlayers.Count()) {
+                resultList.AddRange(Play(allPlayers, nextPlayerIndex, deck.Skip(skipAmount).ToArray()));
+            }
+
+            return resultList;
+        }
+
+        private List<(CardRequestResult RequestResult, IEnumerable<WithdrawnBooksRecord> Books, IEnumerable<DeckWithdrawalRecord> StockWithdrawalRecords)> PlayerActions(IPlayer player, IEnumerable<IPlayer> allPlayers, IEnumerable<Card> deck) {
+            var resultList = new List<(CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>)>();
+
             if(player.Cards.Any()) {
+                CardRequest request;
                 if (typeof(IAutomatedPlayer).IsAssignableFrom(player.GetType())) {
                     request = ((IAutomatedPlayer)player).MakeRequest(allPlayers);
                 }
                 else if (typeof(IManualPlayer).IsAssignableFrom(player.GetType())) {
-                    Log("\r\nIt is your turn.");
+                    Log("\r\nIt is your turn. Select a card.");
                     request = ((IManualPlayer)player).MakeRequest();
                 }
                 else throw new ArgumentException("Player is of unknown type. Does not implement necessary interface.");
@@ -193,15 +212,15 @@
 
                 (var books, var deckWithdrawalResults) = PostRequestActions(result, deck);
 
-                resultList.Add((result, books, deckWithdrawalResults));
-
                 Log((result, books, deckWithdrawalResults));
 
-                skipAmount = GetSkipCount(deckWithdrawalResults);
-            }
+                resultList.Add((result, books, deckWithdrawalResults));
 
-            if (nextPlayerIndex < allPlayers.Count()) {
-                resultList.AddRange(Play(allPlayers, nextPlayerIndex, deck.Skip(skipAmount).ToArray()));
+                int skipAmount = GetSkipCount(deckWithdrawalResults);
+
+                if (result.ExchangeCount != 0) {
+                    resultList.AddRange(PlayerActions(player, allPlayers, deck.Skip(skipAmount).ToArray()));
+                }
             }
 
             return resultList;
