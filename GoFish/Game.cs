@@ -116,6 +116,7 @@
         }
 
         private void StartGameCallback() {
+            GameProgress = "";
             GameIdle = false;
             Books.Clear();
             _roundNumber = 0;
