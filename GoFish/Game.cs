@@ -149,6 +149,17 @@
             User.SortHand();
 
             RoundInProgress = false;
+            if (Books.Count == 13) {
+                GameIdle = true;
+                var sortedWinnerList = Books
+                    .GroupBy(b => b.Player)
+                    .OrderBy(b => b.Count())
+                    .Select(b => new { Player = b.Key, Count = b.Count() });
+
+                var winner = sortedWinnerList.Last();
+
+                Log($"\r\n\r\n{winner.Player.Name} is our winner with {winner.Count} books.");
+            }
         }
 
         private void Deal() {
