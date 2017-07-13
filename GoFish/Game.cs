@@ -226,9 +226,9 @@
             return resultList;
         }
 
-        private (IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>) PostRequestActions(CardRequestResult result, IEnumerable<Card> deck) {
+        private (IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>) PostRequestActions(CardRequestResult result, IEnumerable<Card> deck, bool requiredDraw = true) {
 
-            var deckWithdrawalResults = CheckIfCardsNeedToBeDrawnFromDeck(result, deck.ToArray());
+            var deckWithdrawalResults = CheckIfCardsNeedToBeDrawnFromDeck(result, deck.ToArray(), requiredDraw);
 
             var booksWithdrawn =
                 WithdrawBooksFound(new IPlayer[] {
@@ -239,15 +239,13 @@
             if (booksWithdrawn.Any() && deckWithdrawalResults.Any()) {
 
                 (var newBooks, var newResults) =
-                    PostRequestActions(result, deck.Skip(
-                        GetSkipCount(deckWithdrawalResults)
-                    ));
+                    PostRequestActions(result, deck.Skip(GetSkipCount(deckWithdrawalResults)), false);
                 return (booksWithdrawn.Concat(newBooks), deckWithdrawalResults.Concat(newResults));
             }
             return (booksWithdrawn, deckWithdrawalResults);
         }
 
-        private List<DeckWithdrawalRecord> CheckIfCardsNeedToBeDrawnFromDeck(CardRequestResult request, IEnumerable<Card> deck) {
+        private List<DeckWithdrawalRecord> CheckIfCardsNeedToBeDrawnFromDeck(CardRequestResult request, IEnumerable<Card> deck, bool requiredDraw) {
             var results = new List<DeckWithdrawalRecord>();
 
             if (deck.Any()) {
@@ -259,7 +257,7 @@
                     skipAmount = DealAmount;
                 }
 
-                if (request.ExchangeCount == 0) {
+                if (request.ExchangeCount == 0 && requiredDraw) {
                     request.Requester.Cards.AddRange(deck.Skip(skipAmount).Take(1));
                     results.Add(new DeckWithdrawalRecord(request.Requester, 1));
                 }
