@@ -8,18 +8,18 @@
         Title="Go Fish!" Height="600" Width="525" Background="Gray" >
         <Grid Margin="10" DataContext="{StaticResource ResourceKey=game }">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="5*" /> 
-                <ColumnDefinition Width="40" /> 
-                <ColumnDefinition Width="2*" /> 
+                <ColumnDefinition Width="5*" />
+                <ColumnDefinition Width="40" />
+                <ColumnDefinition Width="150" />
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" /> 
-                <RowDefinition Height="Auto" /> 
-                <RowDefinition Height="Auto" /> 
-                <RowDefinition /> 
-                <RowDefinition Height="Auto" /> 
-                <RowDefinition Height="Auto" MinHeight="150" /> 
-                <RowDefinition Height="Auto" /> 
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="150" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
         <TextBlock Text="Your Name" />
@@ -28,12 +28,16 @@
             <Button Margin="5,0">
                 <Button.Style>
                     <Style TargetType="Button">
-                        <Setter Property="Content" Value="Start the game!"/>
-                        <Setter Property="Command" Value="{Binding StartGame}"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding GameIdle}" Value="False">
                                 <Setter Property="Content" Value="Play Next Round!"/>
                                 <Setter Property="Command" Value="{Binding PlayRound}"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding RoundInProgress}" Value="True">
+                                <Setter Property="Content" Value="Request Card"/>
+                                <Setter Property="Command" Value="{Binding RequestCard}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding GameIdle}" Value="True">
+                                <Setter Property="Content" Value="Start the game!"/>
+                                <Setter Property="Command" Value="{Binding StartGame}"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -45,13 +49,21 @@
         <ScrollViewer Grid.Row="3" Background="White" Foreground="Black" Content="{Binding GameProgress}"/>
 
         <Label Content="Books" Grid.Row="4" Margin="0,10,0,0" />
-        <ScrollViewer FontSize="12" Background="White" Foreground="Black" Grid.Row="5" Grid.RowSpan="2" Content="{Binding Books}"/>
+        <ListView Grid.Row="5" ItemsSource="{Binding Books}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock>
+                        <Run Text="{Binding Player.Name, Mode=OneWay}"/><Run Text=" owns the "/><Run Text="{Binding Value, Converter={StaticResource cardValueConverter}, Mode=OneWay}"/><Run Text="."/>
+                    </TextBlock>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
 
         <TextBlock Text="Your Hand" Grid.Row="0" Grid.Column="2" />
         <ListView Grid.Row="1" Grid.RowSpan="3" Grid.Column="2" ItemsSource="{Binding User.Cards}" SelectedItem="{Binding Path=SelectedCard, Mode=TwoWay}"/>
 
         <Label Content="Players" Grid.Row="4" Grid.Column="2" Margin="0,10,0,0" />
-        <ListView x:Name="computerPlayers" Grid.Row="5" Grid.Column="2" Margin="0,0,0,10" ItemsSource="{Binding ComputerPlayers}" SelectedItem="{Binding Path=SelectedPlayer, Mode=TwoWay}">
+        <ListView x:Name="computerPlayers" Grid.Row="5" Grid.Column="2" ItemsSource="{Binding ComputerPlayers}" SelectedItem="{Binding Path=SelectedPlayer, Mode=TwoWay}">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <TextBlock>
@@ -60,19 +72,6 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
-
-        <Button Grid.Column="2" Grid.Row="7" Content="Request Card" Command="{Binding RequestCard}">
-            <Button.Style>
-                <Style TargetType="Button">
-                    <Setter Property="IsEnabled" Value="True"/>
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding GameIdle}" Value="True">
-                            <Setter Property="IsEnabled" Value="False"/>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </Button.Style>
-        </Button>
 
     </Grid>
 </Window>
