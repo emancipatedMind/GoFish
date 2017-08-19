@@ -5,7 +5,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GoFish"
         mc:Ignorable="d"
-        Title="Go Fish!" Height="600" Width="525" Background="Gray" >
+        Title="Go Fish!" Background="Gray"
+        Height="600" MinHeight="600"
+        MinWidth="595" Width="595" >
         <Grid Margin="10" DataContext="{StaticResource ResourceKey=game }">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="5*" />
@@ -18,7 +20,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="150" />
+                <RowDefinition Height="216.667" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
