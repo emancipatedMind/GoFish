@@ -50,6 +50,7 @@
             StartGame = new DelegateCommand(StartGameCallback);
             PlayRound = new AwaitableDelegateCommand(() => Task.Factory.StartNew(PlayRoundCallback));
             RequestCard = new DelegateCommand(RequestCardCallback);
+            Reset = new DelegateCommand(ResetCallback);
 
             _context = SynchronizationContext.Current;
         }
@@ -60,6 +61,7 @@
         public List<ComputerPlayerViewModel> ComputerPlayers { get; } = new List<ComputerPlayerViewModel>();
         public DelegateCommand RequestCard { get; }
         public DelegateCommand StartGame { get; }
+        public DelegateCommand Reset { get; }
         public AwaitableDelegateCommand PlayRound { get; }
 
 
@@ -113,6 +115,12 @@
 
         private void RequestCardCallback() {
             _autoWaitHandle.Set();
+        }
+
+        private void ResetCallback() {
+            Log("\r\nGame has been reset..." );
+            GameIdle = true;
+            RoundInProgress = false;
         }
 
         private void StartGameCallback() {

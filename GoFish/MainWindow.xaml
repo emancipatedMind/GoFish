@@ -25,9 +25,9 @@
             </Grid.RowDefinitions>
 
         <TextBlock Text="Your Name" />
-        <DockPanel Grid.Row="1" LastChildFill="True">
+        <StackPanel Orientation="Horizontal" Grid.Row="1" >
             <TextBox FontSize="12" Width="150" Text="{Binding User.Name}" HorizontalContentAlignment="Center"/>
-            <Button Margin="5,0">
+            <Button Width="100" Margin="10, 0">
                 <Button.Style>
                     <Style TargetType="Button">
                                 <Setter Property="Content" Value="Play Next Round!"/>
@@ -45,7 +45,18 @@
                     </Style>
                 </Button.Style>
             </Button>
-        </DockPanel>
+            <Button Width="100" Command="{Binding Reset}" Content="Reset">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding GameIdle}" Value="True">
+                                <Setter Property="IsEnabled" Value="False"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
 
         <TextBlock Text="Game progress" Grid.Row="2" Margin="0,10,0,0" />
         <ScrollViewer Grid.Row="3" Background="White" Foreground="Black" Content="{Binding GameProgress}"/>
