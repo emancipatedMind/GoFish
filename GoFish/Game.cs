@@ -242,7 +242,7 @@
                 .ToList()
                 .ForEach(p => p.SortCards());
 
-                Log((result, books, deckWithdrawalResults));
+                UpdateGameProgress((result, books, deckWithdrawalResults));
 
                 if (result.ExchangeCount != 0) {
                     int skipAmount = GetSkipCount(deckWithdrawalResults);
@@ -342,18 +342,18 @@
             _context.Send(o => action(o) , null);
 
         #region Log
-        private void Log((CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>) info) {
-            Log(info.Item1);
-            Log(info.Item3);
-            Log(info.Item2);
+        private void UpdateGameProgress((CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>) info) {
+            UpdateGameProgress(info.Item1);
+            UpdateGameProgress(info.Item3);
+            UpdateGameProgress(info.Item2);
         }
 
-        private void Log(CardRequestResult result) {
-            GameProgress += ConstructLogString(result);
+        private void UpdateGameProgress(CardRequestResult result) {
+            GameProgress += ConstructUpdateGameProgressString(result);
         }
 
-        private void Log(IEnumerable<WithdrawnBooksRecord> booksRecord) {
-            string booksRecordString = ConstructLogString(booksRecord);
+        private void UpdateGameProgress(IEnumerable<WithdrawnBooksRecord> booksRecord) {
+            string booksRecordString = ConstructUpdateGameProgressString(booksRecord);
             GameProgress += booksRecordString;
             UseContext(_ =>
                 booksRecord
@@ -362,15 +362,15 @@
             );
         }
 
-        private void Log(IEnumerable<DeckWithdrawalRecord> deckWithdrawalResults) {
-            GameProgress += ConstructLogString(deckWithdrawalResults);
+        private void UpdateGameProgress(IEnumerable<DeckWithdrawalRecord> deckWithdrawalResults) {
+            GameProgress += ConstructUpdateGameProgressString(deckWithdrawalResults);
         }
 
         private void Log(string text) {
             GameProgress += text + "\r\n";
         }
 
-        private string ConstructLogString(CardRequestResult result) {
+        private string ConstructUpdateGameProgressString(CardRequestResult result) {
             var sb = new StringBuilder();
             string pluralRankText = Card.Plural(result.Rank);
             sb.AppendLine();
@@ -384,7 +384,7 @@
             return sb.ToString();
         }
 
-        private string ConstructLogString(IEnumerable<WithdrawnBooksRecord> booksRecord) {
+        private string ConstructUpdateGameProgressString(IEnumerable<WithdrawnBooksRecord> booksRecord) {
             if (booksRecord.Count() == 0) return "";
 
             return string.Join("\r\n",
@@ -393,7 +393,7 @@
                 ) + "\r\n";
         }
 
-        private string ConstructLogString(IEnumerable<DeckWithdrawalRecord> results) {
+        private string ConstructUpdateGameProgressString(IEnumerable<DeckWithdrawalRecord> results) {
             if (results.Count() == 0) return "";
 
             return string.Join("\r\n",
