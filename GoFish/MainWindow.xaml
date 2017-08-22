@@ -8,7 +8,8 @@
         Title="Go Fish!" Background="Gray"
         Height="600" MinHeight="600"
         MinWidth="595" Width="595" >
-        <Grid Margin="10" DataContext="{StaticResource ResourceKey=game }">
+    <DockPanel DataContext="{StaticResource ResourceKey=game}" LastChildFill="True">
+        <Grid Margin="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="5*" />
                 <ColumnDefinition Width="40" />
@@ -24,67 +25,67 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-        <TextBlock Text="Your Name" />
-        <StackPanel Orientation="Horizontal" Grid.Row="1" >
-            <TextBox FontSize="12" Width="150" Text="{Binding User.Name}" HorizontalContentAlignment="Center"/>
-            <Button Width="100" Margin="10, 0">
-                <Button.Style>
-                    <Style TargetType="Button">
-                                <Setter Property="Content" Value="Play Next Round!"/>
-                                <Setter Property="Command" Value="{Binding PlayRound}"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding RoundInProgress}" Value="True">
-                                <Setter Property="Content" Value="Request Card"/>
-                                <Setter Property="Command" Value="{Binding RequestCard}"/>
-                            </DataTrigger>
-                            <DataTrigger Binding="{Binding GameIdle}" Value="True">
-                                <Setter Property="Content" Value="Start the game!"/>
-                                <Setter Property="Command" Value="{Binding StartGame}"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
-            <Button Width="100" Command="{Binding Reset}" Content="Reset">
-                <Button.Style>
-                    <Style TargetType="Button">
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding GameIdle}" Value="True">
-                                <Setter Property="IsEnabled" Value="False"/>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
-            </Button>
-        </StackPanel>
+            <TextBlock Text="Your Name" />
+            <StackPanel Orientation="Horizontal" Grid.Row="1" >
+                <TextBox FontSize="12" Width="150" Text="{Binding User.Name}" HorizontalContentAlignment="Center"/>
+                <Button Width="100" Margin="10, 0">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Content" Value="Play Next Round!"/>
+                            <Setter Property="Command" Value="{Binding PlayRound}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding RoundInProgress}" Value="True">
+                                    <Setter Property="Content" Value="Request Card"/>
+                                    <Setter Property="Command" Value="{Binding RequestCard}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding GameIdle}" Value="True">
+                                    <Setter Property="Content" Value="Start the game!"/>
+                                    <Setter Property="Command" Value="{Binding StartGame}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Width="100" Command="{Binding Reset}" Content="Reset">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding GameIdle}" Value="True">
+                                    <Setter Property="IsEnabled" Value="False"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
 
-        <TextBlock Text="Game progress" Grid.Row="2" Margin="0,10,0,0" />
-        <ScrollViewer Grid.Row="3" Background="White" Foreground="Black" Content="{Binding GameProgress}"/>
+            <TextBlock Text="Game progress" Grid.Row="2" Margin="0,10,0,0" />
+            <ScrollViewer Grid.Row="3" Background="White" Foreground="Black" Content="{Binding GameProgress}"/>
 
-        <Label Content="Books" Grid.Row="4" Margin="0,10,0,0" />
-        <ListView Grid.Row="5" ItemsSource="{Binding Books}">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock>
+            <Label Content="Books" Grid.Row="4" Margin="0,10,0,0" />
+            <ListView Grid.Row="5" ItemsSource="{Binding Books}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock>
                         <Run Text="{Binding Player.Name, Mode=OneWay}"/><Run Text=" owns the "/><Run Text="{Binding Value, Converter={StaticResource cardValueConverter}, Mode=OneWay}"/><Run Text="."/>
-                    </TextBlock>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+                        </TextBlock>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
 
-        <TextBlock Text="Your Hand" Grid.Row="0" Grid.Column="2" />
-        <ListView Grid.Row="1" Grid.RowSpan="3" Grid.Column="2" ItemsSource="{Binding User.Cards}" SelectedItem="{Binding Path=SelectedCard, Mode=TwoWay}"/>
+            <TextBlock Text="Your Hand" Grid.Row="0" Grid.Column="2" />
+            <ListView Grid.Row="1" Grid.RowSpan="3" Grid.Column="2" ItemsSource="{Binding User.Cards}" SelectedItem="{Binding Path=SelectedCard, Mode=TwoWay}"/>
 
-        <Label Content="Players" Grid.Row="4" Grid.Column="2" Margin="0,10,0,0" />
-        <ListView x:Name="computerPlayers" Grid.Row="5" Grid.Column="2" ItemsSource="{Binding ComputerPlayers}" SelectedItem="{Binding Path=SelectedPlayer, Mode=TwoWay}">
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <TextBlock>
+            <Label Content="Players" Grid.Row="4" Grid.Column="2" Margin="0,10,0,0" />
+            <ListView x:Name="computerPlayers" Grid.Row="5" Grid.Column="2" ItemsSource="{Binding ComputerPlayers}" SelectedItem="{Binding Path=SelectedPlayer, Mode=TwoWay}">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock>
                         <Run Text="{Binding Name}"/><Run Text=" ("/><Run Text="{Binding Count, Mode=OneWay}"/><Run Text=")"/>
-                    </TextBlock>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
-
-    </Grid>
+                        </TextBlock>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+    </DockPanel>
 </Window>
