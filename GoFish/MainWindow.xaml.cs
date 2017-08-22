@@ -28,5 +28,6 @@ namespace GoFish {
                 Application.Current.Dispatcher.Invoke(new Action(() => MessageBox.Show(e.Data)));
         }
 
+        public void Exit_Click(object sender, RoutedEventArgs e) => Close();
     }
 }

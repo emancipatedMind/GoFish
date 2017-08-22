@@ -9,6 +9,11 @@
         Height="600" MinHeight="600"
         MinWidth="595" Width="595" >
     <DockPanel DataContext="{StaticResource ResourceKey=game}" LastChildFill="True">
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_Exit" Click="Exit_Click"/>
+            </MenuItem>
+        </Menu>
         <Grid Margin="10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="5*" />
