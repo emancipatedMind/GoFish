@@ -10,15 +10,17 @@
     using ToolkitNFW4.XAML;
     public class Game : EntityBase {
 
-        Random randomizer = new Random();
+        readonly List<Card> _stock = new List<Card>();
+        readonly Random randomizer = new Random();
+        readonly AutoResetEvent _autoWaitHandle = new AutoResetEvent(false);
+        readonly SynchronizationContext _context;
+
         Card? _selectedCard;
         ComputerPlayerViewModel _selectedPlayer;
         bool _gameIdle = true;
         bool _roundInProgress = false;
         string _gameProgress = "";
         int _roundNumber = 0;
-        private SynchronizationContext _context;
-        AutoResetEvent _autoWaitHandle = new AutoResetEvent(false);
 
         public Game() {
 
@@ -100,7 +102,6 @@
         }
 
         int DealAmount { get; set; } = 5;
-        List<Card> Cards { get; } = new List<Card>();
 
         public string GameProgress {
             get => _gameProgress;
@@ -149,17 +150,17 @@
 
             GameProgress = $"********** Round #{++_roundNumber} **********\r\n";
 
-            var results = Play(Players, 0, Cards);
+            var results = Play(Players, 0, _stock);
 
             var withdrawalRecords = results.SelectMany(r => r.SelectMany(re => re.StockWithdrawalRecords));
 
             if (withdrawalRecords.Any()) {
-                var cards = Cards.Skip(GetSkipCount(withdrawalRecords)).ToArray();
-                Cards.Clear();
-                Cards.AddRange(cards);
+                var cards = _stock.Skip(GetSkipCount(withdrawalRecords)).ToArray();
+                _stock.Clear();
+                _stock.AddRange(cards);
             }
 
-            GameProgress += $"\r\nStock has {Cards.Count} card{(Cards.Count == 1 ? "" : "s")} remaining.";
+            GameProgress += $"\r\nStock has {_stock.Count} card{(_stock.Count == 1 ? "" : "s")} remaining.";
 
             RoundInProgress = false;
             if (Books.Count == 13) {
@@ -181,13 +182,13 @@
         }
 
         private void Deal() {
-            Cards.Clear();
+            _stock.Clear();
             IEnumerable<Card> cards = Deck.NewShuffled.ToArray();
             for (int i = 0; i < Players.Count; i++) {
                 Players[i].Cards.Clear();
                 Players[i].Cards.AddRange(cards.Skip(i * DealAmount).Take(DealAmount));
             }
-            Cards.AddRange(cards.Skip(Players.Count * DealAmount));
+            _stock.AddRange(cards.Skip(Players.Count * DealAmount));
         }
 
         private List<List<(CardRequestResult RequestResult, IEnumerable<WithdrawnBooksRecord> Books, IEnumerable<DeckWithdrawalRecord> StockWithdrawalRecords)>> Play(IEnumerable<IPlayer> allPlayers, int currPlayerIndex, IEnumerable<Card> deck) {
