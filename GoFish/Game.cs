@@ -1,4 +1,5 @@
-﻿namespace GoFish {
+﻿#define AutomatedPlay
+namespace GoFish {
     using System.Threading;
     using PlayingCards;
     using System;
@@ -24,6 +25,9 @@
 
         public Game() {
 
+#if AutomatedPlay
+            Players.Add(new ComputerPlayer(new Player("Peter")));
+#else
             var user = new User(new Player("Peter"));
 
             user.CardRequested += (s, e) => {
@@ -42,12 +46,16 @@
             };
 
             Players.Add(user);
+#endif
             Players.Add(new ComputerPlayer(new Player("Melvin")));
             Players.Add(new ComputerPlayer(new Player("John")));
             Players.Add(new ComputerPlayer(new Player("Raymond")));
 
+#if AutomatedPlay
+#else
             User = new UserViewModel(user);
-            ComputerPlayers.AddRange(Players.Skip(1).Select(p => new ComputerPlayerViewModel(p)));
+#endif
+            ComputerPlayers.AddRange(Players.Where(p => typeof(IAutomatedPlayer).IsAssignableFrom(p.GetType())).Select(p => new ComputerPlayerViewModel(p)));
 
             StartGame = new DelegateCommand(StartGameCallback);
             PlayRound = new AwaitableDelegateCommand(() => Task.Factory.StartNew(PlayRoundCallback));
@@ -134,7 +142,7 @@
             Books.Clear();
             _roundNumber = 0;
             Deal();
-            User.SortHand();
+            User?.SortHand();
         }
 
         private bool PlayerCardNeeded =>
