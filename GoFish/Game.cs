@@ -370,13 +370,9 @@ namespace GoFish {
 
         #region UpdateGameProgress
         private void UpdateGameProgress((CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>) info) {
-            UpdateGameProgress(info.Item1);
+            GameProgress += "\r\n" + GetCardRequestString(info.Item1);
             UpdateGameProgress(info.Item3);
             UpdateGameProgress(info.Item2);
-        }
-
-        private void UpdateGameProgress(CardRequestResult result) {
-            GameProgress += ConstructUpdateGameProgressString(result);
         }
 
         private void UpdateGameProgress(IEnumerable<WithdrawnBooksRecord> booksRecord) {
@@ -395,20 +391,6 @@ namespace GoFish {
 
         private void UpdateGameProgress(string text) {
             GameProgress += text + "\r\n";
-        }
-
-        private string ConstructUpdateGameProgressString(CardRequestResult result) {
-            var sb = new StringBuilder();
-            string pluralRankText = Card.Plural(result.Rank);
-            sb.AppendLine();
-            sb.AppendLine($"{result.Requester.Name} says, \"Hey {result.Requestee.Name}... Do you have any {pluralRankText}?\"");
-            if (result.ExchangeCount != 0) {
-                sb.AppendLine($"{result.Requestee.Name} hands over {result.ExchangeCount} {(result.ExchangeCount == 1 ? result.Rank.ToString() : pluralRankText)}.");
-            }
-            else {
-                sb.AppendLine($"{result.Requestee.Name} says, \"Go fish.\"");
-            }
-            return sb.ToString();
         }
 
         private string ConstructUpdateGameProgressString(IEnumerable<WithdrawnBooksRecord> booksRecord) {
