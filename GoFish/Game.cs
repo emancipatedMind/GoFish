@@ -365,21 +365,13 @@ namespace GoFish {
                 records.Select(r => r.CardsWithDrawn.Length).Aggregate((prev, next) => prev + next) :
                 0;
 
-        private void UseContext(Action<object> action) =>
-            _context.Send(o => action(o) , null);
-
         #region UpdateGameProgress
         private void UpdateGameProgress((CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>) info) {
             GameProgress += "\r\n" + GetCardRequestString(info.Item1);
             GameProgress += GetDeckWithdrawalString(info.Item3);
-            UpdateGameProgress(info.Item2);
-        }
-
-        private void UpdateGameProgress(IEnumerable<WithdrawnBooksRecord> booksRecord) {
-            string booksRecordString = ConstructUpdateGameProgressString(booksRecord);
-            GameProgress += booksRecordString;
+            GameProgress += GetBooksWithdrawnString(info.Item2);
             UseContext(_ =>
-                booksRecord
+                info.Item2
                     .ToList()
                     .ForEach(b => Books.Add(b))
             );
@@ -387,15 +379,6 @@ namespace GoFish {
 
         private void UpdateGameProgress(string text) {
             GameProgress += text + "\r\n";
-        }
-
-        private string ConstructUpdateGameProgressString(IEnumerable<WithdrawnBooksRecord> booksRecord) {
-            if (booksRecord.Count() == 0) return "";
-
-            return string.Join("\r\n",
-                booksRecord.Select(b =>
-                    $"{b.Player.Name} lays down book of {Card.Plural(b.Value)}.")
-                ) + "\r\n";
         }
         #endregion
 
@@ -500,6 +483,8 @@ namespace GoFish {
             return sb.ToString();
         }
 
+        private void UseContext(Action<object> action) =>
+            _context.Send(o => action(o) , null);
         #endregion
     }
 }
