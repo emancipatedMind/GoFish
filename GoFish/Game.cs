@@ -142,10 +142,7 @@ namespace GoFish {
             Books.Clear();
             _roundNumber = 0;
             Deal();
-#if AutomatedPlay
-#else
-            User.SortHand();
-#endif
+            User?.SortHand();
         }
 
         private bool PlayerCardNeeded =>
@@ -275,7 +272,7 @@ namespace GoFish {
                     result.Requestee,
                 });
 
-            if (booksWithdrawn.Any() && deckWithdrawalResults.Any()) {
+            if (booksWithdrawn.Any() || deckWithdrawalResults.Any()) {
 
                 (var newBooks, var newResults) =
                     PostRequestActions(result, deck.Skip(GetSkipCount(deckWithdrawalResults)), false);
