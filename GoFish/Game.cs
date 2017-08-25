@@ -272,7 +272,7 @@ namespace GoFish {
                     result.Requestee,
                 });
 
-            if (booksWithdrawn.Any() && deckWithdrawalResults.Any()) {
+            if (booksWithdrawn.Any() || deckWithdrawalResults.Any()) {
 
                 (var newBooks, var newResults) =
                     PostRequestActions(result, deck.Skip(GetSkipCount(deckWithdrawalResults)), false);
