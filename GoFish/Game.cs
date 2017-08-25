@@ -7,8 +7,10 @@ namespace GoFish {
     using System.Collections.ObjectModel;
     using System.Linq;
     using System.Text;
+    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using ToolkitNFW4.XAML;
+    using ToolkitNFW4.Extensions;
     public class Game : EntityBase {
 
         readonly List<Card> _stock = new List<Card>();
@@ -22,6 +24,7 @@ namespace GoFish {
         bool _roundInProgress = false;
         string _gameProgress = "";
         int _roundNumber = 0;
+        Action<string> logMethod;
 
         public Game() {
 
@@ -143,6 +146,9 @@ namespace GoFish {
             _roundNumber = 0;
             Deal();
             User?.SortHand();
+            logMethod = ToolkitNFW4.Common.Operations.GetWriteMethod($"GoFishLog{DateTime.Now.ToString("yyyyMMddHHmmss")}.txt");
+            logMethod("********** GoFish Log **********");
+            logMethod(GetPrintOutOfPlayersHand());
         }
 
         private bool PlayerCardNeeded =>
@@ -151,6 +157,13 @@ namespace GoFish {
 
         private bool PlayerStillInGame =>
             Players.First().Cards.Count > 0;
+
+        private object[] GetPlayerBooksCount() =>
+            Books
+                .GroupBy(b => b.Player)
+                .OrderBy(b => b.Count())
+                .Select(b => new { Player = b.Key, Count = b.Count() })
+                .ToArray();
 
         private void PlayRoundCallback() {
 
@@ -171,6 +184,9 @@ namespace GoFish {
             GameProgress += $"\r\nStock has {_stock.Count} card{(_stock.Count == 1 ? "" : "s")} remaining.";
 
             RoundInProgress = false;
+
+            logMethod(ProduceLogString(results));
+
             if (Books.Count == 13) {
                 GameIdle = true;
                 var sortedWinnerList = Books
@@ -182,6 +198,7 @@ namespace GoFish {
 
                 UpdateGameProgress($"\r\n\r\n{winner.Player.Name} is our winner with {winner.Count} books.");
 
+                logMethod(ProduceLogString(Books));
 
                 var firstPlayer = Players.Take(1).ToArray();
                 var restOfPlayers = Players.Skip(1).ToArray();
@@ -413,5 +430,107 @@ namespace GoFish {
         }
         #endregion
 
+        #region Log
+        private string ProduceLogString(IEnumerable<WithdrawnBooksRecord> books) {
+            return UseStringBuilderWithNewLineRestriction(sb => {
+                sb.AppendLine("\r\nGame over!");
+                sb.AppendLine("Results");
+                foreach (dynamic r in GetPlayerBooksCount().Reverse())
+                    sb.AppendLine($"{r.Player.Name} => {r.Count} book{(r.Count == 1 ? "" : "s")}.");
+            });
+        }
+
+        private string ProduceLogString(List<List<(CardRequestResult RequestResult, IEnumerable<WithdrawnBooksRecord> Books, IEnumerable<DeckWithdrawalRecord> StockWithdrawalRecords)>> results) {
+            return UseStringBuilderWithNewLineRestriction(sb => {
+                sb.AppendLine("\r\n" + GetRoundNumberLogString() + "\r\n");
+
+                results
+                    .ForEach(r =>
+                        r.ForEach(result => {
+                            sb.AppendLine(GetCardRequestString(result.RequestResult));
+                            sb.AppendLine(GetBooksWithdrawnString(result.Books));
+                            sb.AppendLine(GetDetailedDeckWithdrawalString(result.StockWithdrawalRecords));
+                        })
+                    );
+
+                sb.AppendLine(GetPrintOutOfPlayersHand());
+                sb.AppendLine("\r\n" + GetStockCountRemainingLogString());
+            });
+        }
+
+        private string GetPrintOutOfPlayersHand() {
+            return UseStringBuilderWithNewLineRestriction(sb => {
+                Players.ForEach(p => {
+                    sb.AppendLine($"\r\n{p.Name}'s Hand:");
+                    if (p.Cards.Count == 0)
+                        sb.AppendLine($"<Empty>");
+                    else
+                        p.Cards.OrderBy(c => c.Value).ForEach(c => sb.AppendLine($"\t{c}"));
+                });
+            });
+        }
+
+        private string GetStockCountRemainingLogString() =>
+            $"Stock has {_stock.Count} card{(_stock.Count == 1 ? "" : "s")} remaining.";
+
+        private string GetRoundNumberLogString() =>
+            $"**********Round Number {_roundNumber}**********";
+
+        private string GetCardRequestString(CardRequestResult result) {
+            return UseStringBuilderWithNewLineRestriction(sb => {
+                string pluralRankText = Card.Plural(result.Rank);
+                sb.AppendLine($"{result.Requester.Name} says, \"Hey {result.Requestee.Name}... Do you have any {pluralRankText}?\"");
+                if (result.ExchangeCount != 0) {
+                    sb.AppendLine($"{result.Requestee.Name} hands over {result.ExchangeCount} {(result.ExchangeCount == 1 ? result.Rank.ToString() : pluralRankText)}.");
+                }
+                else {
+                    sb.AppendLine($"{result.Requestee.Name} says, \"Go fish.\"");
+                }
+            });
+        }
+
+        private string GetBooksWithdrawnString(IEnumerable<WithdrawnBooksRecord> booksRecord) {
+            if (booksRecord.Count() == 0) return "";
+
+            return string.Join("\r\n",
+                booksRecord.Select(b =>
+                    $"{b.Player.Name} lays down book of {Card.Plural(b.Value)}.")
+                );
+        }
+
+        private string GetDetailedDeckWithdrawalString(IEnumerable<DeckWithdrawalRecord> results) {
+            if (results.Count() == 0) return "";
+
+            return string.Join("\r\n",
+                results.Select(r => {
+                    var str = $"{r.Player.Name} drew the following from deck:\r\n";
+                    str += string.Join("\r\n", r.CardsWithDrawn.Select(cd => $"\t{cd}"));
+                    return str + "\r\n";
+                })
+            );
+        }
+
+        private string GetDeckWithdrawalString(IEnumerable<DeckWithdrawalRecord> results) {
+            if (results.Count() == 0) return "";
+
+            return string.Join("\r\n",
+                results.Select(r =>
+                    $"{r.Player.Name} draws {r.CardsWithDrawn.Length} card{(r.CardsWithDrawn.Length == 1 ? "" : "s")} from deck.")
+                );
+        }
+        #endregion
+
+        #region Support Methods
+        private string UseStringBuilderWithNewLineRestriction(Action<StringBuilder> action) {
+            return Regex.Replace(UseStringBuilder(action), "(\n{3,})|((\r\n){3,})", "\r\n\r\n");
+        }
+
+        private string UseStringBuilder(Action<StringBuilder> action) {
+            var sb = new StringBuilder();
+            action(sb);
+            return sb.ToString();
+        }
+
+        #endregion
     }
 }
