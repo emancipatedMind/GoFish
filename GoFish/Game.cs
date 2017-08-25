@@ -281,18 +281,19 @@
 
                 if (request.Requestee.Cards.Count == 0) {
                     request.Requestee.Cards.AddRange(deck.Take(DealAmount));
-                    results.Add(new DeckWithdrawalRecord(request.Requestee, deck.Take(DealAmount).Count()));
+                    results.Add(new DeckWithdrawalRecord(request.Requestee, deck.Take(DealAmount)));
                     skipAmount = DealAmount;
                 }
 
                 if (deck.Skip(skipAmount).Any()) {
                     if (request.ExchangeCount == 0 && requiredDraw) {
-                        request.Requester.Cards.AddRange(deck.Skip(skipAmount).Take(1));
-                        results.Add(new DeckWithdrawalRecord(request.Requester, 1));
+                        var cardsDrawn = deck.Skip(skipAmount).Take(1);
+                        request.Requester.Cards.AddRange(cardsDrawn);
+                        results.Add(new DeckWithdrawalRecord(request.Requester, cardsDrawn));
                     }
                     else if (request.Requester.Cards.Count == 0) {
                         request.Requester.Cards.AddRange(deck.Skip(skipAmount).Take(DealAmount));
-                        results.Add(new DeckWithdrawalRecord(request.Requester, deck.Take(DealAmount).Count()));
+                        results.Add(new DeckWithdrawalRecord(request.Requester, deck.Take(DealAmount)));
                     }
                 } 
             }
@@ -336,7 +337,7 @@
 
         private int GetSkipCount(IEnumerable<DeckWithdrawalRecord> records) =>
                 records.Any() ?
-                records.Select(r => r.CardCount).Aggregate((prev, next) => prev + next) :
+                records.Select(r => r.CardsWithDrawn.Length).Aggregate((prev, next) => prev + next) :
                 0;
 
         private void UseContext(Action<object> action) =>
@@ -399,7 +400,7 @@
 
             return string.Join("\r\n",
                 results.Select(r =>
-                    $"{r.Player.Name} draws {r.CardCount} card{(r.CardCount == 1 ? "" : "s")} from deck.")
+                    $"{r.Player.Name} draws {r.CardsWithDrawn.Length} card{(r.CardsWithDrawn.Length == 1 ? "" : "s")} from deck.")
                 ) + "\r\n";
         }
         #endregion
