@@ -371,7 +371,7 @@ namespace GoFish {
         #region UpdateGameProgress
         private void UpdateGameProgress((CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>) info) {
             GameProgress += "\r\n" + GetCardRequestString(info.Item1);
-            UpdateGameProgress(info.Item3);
+            GameProgress += GetDeckWithdrawalString(info.Item3);
             UpdateGameProgress(info.Item2);
         }
 
@@ -385,10 +385,6 @@ namespace GoFish {
             );
         }
 
-        private void UpdateGameProgress(IEnumerable<DeckWithdrawalRecord> deckWithdrawalResults) {
-            GameProgress += ConstructUpdateGameProgressString(deckWithdrawalResults);
-        }
-
         private void UpdateGameProgress(string text) {
             GameProgress += text + "\r\n";
         }
@@ -399,15 +395,6 @@ namespace GoFish {
             return string.Join("\r\n",
                 booksRecord.Select(b =>
                     $"{b.Player.Name} lays down book of {Card.Plural(b.Value)}.")
-                ) + "\r\n";
-        }
-
-        private string ConstructUpdateGameProgressString(IEnumerable<DeckWithdrawalRecord> results) {
-            if (results.Count() == 0) return "";
-
-            return string.Join("\r\n",
-                results.Select(r =>
-                    $"{r.Player.Name} draws {r.CardsWithDrawn.Length} card{(r.CardsWithDrawn.Length == 1 ? "" : "s")} from deck.")
                 ) + "\r\n";
         }
         #endregion
