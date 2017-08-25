@@ -119,7 +119,7 @@
         }
 
         private void ResetCallback() {
-            Log("\r\nGame has been reset..." );
+            UpdateGameProgress("\r\nGame has been reset..." );
             GameIdle = true;
             RoundInProgress = false;
         }
@@ -172,7 +172,8 @@
 
                 var winner = sortedWinnerList.Last();
 
-                Log($"\r\n\r\n{winner.Player.Name} is our winner with {winner.Count} books.");
+                UpdateGameProgress($"\r\n\r\n{winner.Player.Name} is our winner with {winner.Count} books.");
+
 
                 var firstPlayer = Players.Take(1).ToArray();
                 var restOfPlayers = Players.Skip(1).ToArray();
@@ -225,7 +226,7 @@
                     request = ((IAutomatedPlayer)player).MakeRequest(allPlayers);
                 }
                 else if (typeof(IManualCardRequester).IsAssignableFrom(player.GetType())) {
-                    Log("\r\nIt is your turn. Select a card, and player.");
+                    UpdateGameProgress("\r\nIt is your turn. Select a card, and player.");
                     request = ((IManualCardRequester)player).MakeRequest();
                 }
                 else throw new ArgumentException("Player is of unknown type. Does not implement necessary interface.");
@@ -341,7 +342,7 @@
         private void UseContext(Action<object> action) =>
             _context.Send(o => action(o) , null);
 
-        #region Log
+        #region UpdateGameProgress
         private void UpdateGameProgress((CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>) info) {
             UpdateGameProgress(info.Item1);
             UpdateGameProgress(info.Item3);
@@ -366,7 +367,7 @@
             GameProgress += ConstructUpdateGameProgressString(deckWithdrawalResults);
         }
 
-        private void Log(string text) {
+        private void UpdateGameProgress(string text) {
             GameProgress += text + "\r\n";
         }
 
