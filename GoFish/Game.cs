@@ -138,7 +138,6 @@ namespace GoFish {
         private void StartGameCallback() {
             Players
                 .OfType<IAutomatedPlayer>()
-                .ToList()
                 .ForEach(p => p.ClearMemory());
             GameProgress = "";
             GameIdle = false;
@@ -227,7 +226,6 @@ namespace GoFish {
             allPlayers
                 .OfType<IAutomatedPlayer>()
                 .Where(p => p.Cards.Any())
-                .ToList()
                 .ForEach(p => p.CommitRoundToMemory(playerResults.Select(r => r.RequestResult).ToArray()));
 
             if (nextPlayerIndex < allPlayers.Count()) {
@@ -260,7 +258,6 @@ namespace GoFish {
                     result.Requester
                 }
                 .OfType<ISortingPlayer>()
-                .ToList()
                 .ForEach(p => p.SortCards());
 
                 UpdateGameProgress((result, books, deckWithdrawalResults));
@@ -367,7 +364,6 @@ namespace GoFish {
             UpdateGameProgress(GetBooksWithdrawnString(info.Item2));
             UseContext(_ =>
                 info.Item2
-                    .ToList()
                     .ForEach(b => Books.Add(b))
             );
         }
