@@ -69,14 +69,14 @@ namespace GoFish {
         }
 
         List<IPlayer> Players { get; } = new List<IPlayer>();
-
         public UserViewModel User { get; }
         public List<ComputerPlayerViewModel> ComputerPlayers { get; } = new List<ComputerPlayerViewModel>();
         public DelegateCommand RequestCard { get; }
         public DelegateCommand StartGame { get; }
         public DelegateCommand Reset { get; }
         public AwaitableDelegateCommand PlayRound { get; }
-
+        public ObservableCollection<WithdrawnBooksRecord> Books { get; } = new ObservableCollection<WithdrawnBooksRecord>();
+        int DealAmount { get; set; } = 5;
 
         public Card? SelectedCard {
             get => _selectedCard;
@@ -112,7 +112,6 @@ namespace GoFish {
             }
         }
 
-        int DealAmount { get; set; } = 5;
 
         public string GameProgress {
             get => _gameProgress;
@@ -122,8 +121,6 @@ namespace GoFish {
                 OnPropertyChanged(nameof(GameProgress));
             }
         }
-
-        public ObservableCollection<WithdrawnBooksRecord> Books { get; } = new ObservableCollection<WithdrawnBooksRecord>();
 
         private void RequestCardCallback() {
             _autoWaitHandle.Set();
@@ -272,7 +269,6 @@ namespace GoFish {
         }
 
         private (IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>) PostRequestActions(CardRequestResult result, IEnumerable<Card> deck, bool requiredDraw = true) {
-
             var deckWithdrawalResults = CheckIfCardsNeedToBeDrawnFromDeck(result, deck.ToArray(), requiredDraw);
 
             var booksWithdrawn =
@@ -282,11 +278,11 @@ namespace GoFish {
                 });
 
             if (booksWithdrawn.Any() || deckWithdrawalResults.Any()) {
-
                 (var newBooks, var newResults) =
                     PostRequestActions(result, deck.Skip(GetSkipCount(deckWithdrawalResults)), false);
                 return (booksWithdrawn.Concat(newBooks), deckWithdrawalResults.Concat(newResults));
             }
+
             return (booksWithdrawn, deckWithdrawalResults);
         }
 
@@ -312,8 +308,9 @@ namespace GoFish {
                         request.Requester.Cards.AddRange(deck.Skip(skipAmount).Take(DealAmount));
                         results.Add(new DeckWithdrawalRecord(request.Requester, deck.Take(DealAmount)));
                     }
-                } 
+                }
             }
+
             return results;
         }
 
@@ -331,8 +328,8 @@ namespace GoFish {
             return new CardRequestResult(request, cardCount);
         }
 
-        private WithdrawnBooksRecord[] WithdrawBooksFound(IEnumerable<IPlayer> players) {
-            return players.SelectMany(p => {
+        private WithdrawnBooksRecord[] WithdrawBooksFound(IEnumerable<IPlayer> players) =>
+            players.SelectMany(p => {
                 var valuesToBeRemoved = p
                     .Cards
                     .GroupBy(c => c.Value)
@@ -350,12 +347,11 @@ namespace GoFish {
                 return valuesToBeRemoved.Select(b => new WithdrawnBooksRecord(p, b)).ToArray();
             })
             .ToArray();
-        }
 
         private int GetSkipCount(IEnumerable<DeckWithdrawalRecord> records) =>
-                records.Any() ?
-                records.Select(r => r.CardsWithDrawn.Length).Aggregate((prev, next) => prev + next) :
-                0;
+            records.Any() ?
+            records.Select(r => r.CardsWithDrawn.Length).Aggregate((prev, next) => prev + next) :
+            0;
 
         #region UpdateGameProgress
         private void UpdateGameProgress((CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>) info) {
@@ -368,14 +364,13 @@ namespace GoFish {
             );
         }
 
-        private void UpdateGameProgress(string text) {
+        private void UpdateGameProgress(string text) =>
             GameProgress += text + "\r\n";
-        }
         #endregion
 
         #region Log
-        private string ProduceLogString(List<List<(CardRequestResult RequestResult, IEnumerable<WithdrawnBooksRecord> Books, IEnumerable<DeckWithdrawalRecord> StockWithdrawalRecords)>> results) {
-            return UseStringBuilderWithNewLineRestriction(sb => {
+        private string ProduceLogString(List<List<(CardRequestResult RequestResult, IEnumerable<WithdrawnBooksRecord> Books, IEnumerable<DeckWithdrawalRecord> StockWithdrawalRecords)>> results) =>
+            UseStringBuilderWithNewLineRestriction(sb => {
                 sb.AppendLine("\r\n" + GetRoundNumberLogString() + "\r\n");
 
                 results
@@ -390,10 +385,9 @@ namespace GoFish {
                 sb.AppendLine(GetPrintOutOfPlayersHand());
                 sb.AppendLine("\r\n" + GetStockCountRemainingLogString());
             });
-        }
 
-        private string GetPrintOutOfPlayersHand() {
-            return UseStringBuilderWithNewLineRestriction(sb => {
+        private string GetPrintOutOfPlayersHand() =>
+            UseStringBuilderWithNewLineRestriction(sb => {
                 Players.ForEach(p => {
                     sb.AppendLine($"\r\n{p.Name}'s Hand:");
                     if (p.Cards.Count == 0)
@@ -402,7 +396,6 @@ namespace GoFish {
                         p.Cards.OrderBy(c => c.Value).ForEach(c => sb.AppendLine($"\t{c}"));
                 });
             });
-        }
 
         private string GetStockCountRemainingLogString() =>
             $"Stock has {_stock.Count} card{(_stock.Count == 1 ? "" : "s")} remaining.";
@@ -410,8 +403,8 @@ namespace GoFish {
         private string GetRoundNumberLogString() =>
             $"**********Round Number {_roundNumber}**********";
 
-        private string GetCardRequestString(CardRequestResult result) {
-            return UseStringBuilderWithNewLineRestriction(sb => {
+        private string GetCardRequestString(CardRequestResult result) =>
+            UseStringBuilderWithNewLineRestriction(sb => {
                 string pluralRankText = Card.Plural(result.Rank);
                 sb.AppendLine($"{result.Requester.Name} says, \"Hey {result.Requestee.Name}... Do you have any {pluralRankText}?\"");
                 if (result.ExchangeCount != 0) {
@@ -421,7 +414,6 @@ namespace GoFish {
                     sb.AppendLine($"{result.Requestee.Name} says, \"Go fish.\"");
                 }
             });
-        }
 
         private string GetBooksWithdrawnString(IEnumerable<WithdrawnBooksRecord> booksRecord) {
             if (booksRecord.Count() == 0) return "";
@@ -453,14 +445,13 @@ namespace GoFish {
                 );
         }
 
-        private string GetGameResultsString() {
-            return UseStringBuilderWithNewLineRestriction(sb => {
+        private string GetGameResultsString() =>
+            UseStringBuilderWithNewLineRestriction(sb => {
                 sb.AppendLine("\r\nGame over!");
                 sb.AppendLine("Results");
                 foreach (dynamic r in GetPlayerBooksCount().Reverse())
                     sb.AppendLine($"{r.Player.Name} => {r.Count} book{(r.Count == 1 ? "" : "s")}.");
             });
-        }
         #endregion
 
         #region Support Methods
