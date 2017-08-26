@@ -168,8 +168,9 @@ namespace GoFish {
         private void PlayRoundCallback() {
 
             RoundInProgress = true;
+            ++_roundNumber;
 
-            GameProgress = $"********** Round #{++_roundNumber} **********\r\n";
+            UpdateGameProgress(GetRoundNumberLogString());
 
             var results = Play(Players, 0, _stock);
 
@@ -181,7 +182,7 @@ namespace GoFish {
                 _stock.AddRange(cards);
             }
 
-            GameProgress += $"\r\nStock has {_stock.Count} card{(_stock.Count == 1 ? "" : "s")} remaining.";
+            UpdateGameProgress("\r\n\r\n" + GetStockCountRemainingLogString());
 
             RoundInProgress = false;
 
@@ -189,16 +190,9 @@ namespace GoFish {
 
             if (Books.Count == 13) {
                 GameIdle = true;
-                var sortedWinnerList = Books
-                    .GroupBy(b => b.Player)
-                    .OrderBy(b => b.Count())
-                    .Select(b => new { Player = b.Key, Count = b.Count() });
 
-                var winner = sortedWinnerList.Last();
-
-                UpdateGameProgress($"\r\n\r\n{winner.Player.Name} is our winner with {winner.Count} books.");
-
-                logMethod(ProduceLogString(Books));
+                UpdateGameProgress(GetGameResultsString());
+                logMethod(GetGameResultsString());
 
                 var firstPlayer = Players.Take(1).ToArray();
                 var restOfPlayers = Players.Skip(1).ToArray();
@@ -383,15 +377,6 @@ namespace GoFish {
         #endregion
 
         #region Log
-        private string ProduceLogString(IEnumerable<WithdrawnBooksRecord> books) {
-            return UseStringBuilderWithNewLineRestriction(sb => {
-                sb.AppendLine("\r\nGame over!");
-                sb.AppendLine("Results");
-                foreach (dynamic r in GetPlayerBooksCount().Reverse())
-                    sb.AppendLine($"{r.Player.Name} => {r.Count} book{(r.Count == 1 ? "" : "s")}.");
-            });
-        }
-
         private string ProduceLogString(List<List<(CardRequestResult RequestResult, IEnumerable<WithdrawnBooksRecord> Books, IEnumerable<DeckWithdrawalRecord> StockWithdrawalRecords)>> results) {
             return UseStringBuilderWithNewLineRestriction(sb => {
                 sb.AppendLine("\r\n" + GetRoundNumberLogString() + "\r\n");
@@ -469,6 +454,15 @@ namespace GoFish {
                 results.Select(r =>
                     $"{r.Player.Name} draws {r.CardsWithDrawn.Length} card{(r.CardsWithDrawn.Length == 1 ? "" : "s")} from deck.")
                 );
+        }
+
+        private string GetGameResultsString() {
+            return UseStringBuilderWithNewLineRestriction(sb => {
+                sb.AppendLine("\r\nGame over!");
+                sb.AppendLine("Results");
+                foreach (dynamic r in GetPlayerBooksCount().Reverse())
+                    sb.AppendLine($"{r.Player.Name} => {r.Count} book{(r.Count == 1 ? "" : "s")}.");
+            });
         }
         #endregion
 
