@@ -118,7 +118,7 @@ namespace GoFish {
             get => _gameProgress;
             set {
                 if (_gameProgress == value) return;
-                _gameProgress = value;
+                _gameProgress = NewLineRestrictor(value);
                 OnPropertyChanged(nameof(GameProgress));
             }
         }
@@ -467,9 +467,11 @@ namespace GoFish {
         #endregion
 
         #region Support Methods
-        private string UseStringBuilderWithNewLineRestriction(Action<StringBuilder> action) {
-            return Regex.Replace(UseStringBuilder(action), "(\n{3,})|((\r\n){3,})", "\r\n\r\n");
-        }
+        private string UseStringBuilderWithNewLineRestriction(Action<StringBuilder> action) =>
+            NewLineRestrictor(UseStringBuilder(action));
+
+        private string NewLineRestrictor(string s) =>
+            Regex.Replace(s, "(\n{3,})|((\r\n){3,})", "\r\n\r\n");
 
         private string UseStringBuilder(Action<StringBuilder> action) {
             var sb = new StringBuilder();
