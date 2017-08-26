@@ -24,7 +24,7 @@ namespace GoFish {
         bool _roundInProgress = false;
         string _gameProgress = "";
         int _roundNumber = 0;
-        Action<string> logMethod;
+        Action<string> WriteToLogFile;
 
         public Game() {
 
@@ -146,9 +146,9 @@ namespace GoFish {
             _roundNumber = 0;
             Deal();
             User?.SortHand();
-            logMethod = ToolkitNFW4.Common.Operations.GetWriteMethod($"GoFishLog{DateTime.Now.ToString("yyyyMMddHHmmss")}.txt");
-            logMethod("********** GoFish Log **********");
-            logMethod(GetPrintOutOfPlayersHand());
+            WriteToLogFile = ToolkitNFW4.Common.Operations.GetWriteMethod($"GoFishLog{DateTime.Now.ToString("yyyyMMddHHmmss")}.txt");
+            WriteToLogFile("********** GoFish Log **********");
+            WriteToLogFile(GetPrintOutOfPlayersHand());
         }
 
         private bool PlayerCardNeeded =>
@@ -187,13 +187,13 @@ namespace GoFish {
 
             RoundInProgress = false;
 
-            logMethod(ProduceLogString(results));
+            WriteToLogFile(ProduceLogString(results));
 
             if (Books.Count == 13) {
                 GameIdle = true;
 
                 UpdateGameProgress(GetGameResultsString());
-                logMethod(GetGameResultsString());
+                WriteToLogFile(GetGameResultsString());
 
                 var firstPlayer = Players.Take(1).ToArray();
                 var restOfPlayers = Players.Skip(1).ToArray();
