@@ -169,6 +169,7 @@ namespace GoFish {
 
             RoundInProgress = true;
             ++_roundNumber;
+            GameProgress = "";
 
             UpdateGameProgress(GetRoundNumberLogString());
 
