@@ -362,9 +362,9 @@ namespace GoFish {
 
         #region UpdateGameProgress
         private void UpdateGameProgress((CardRequestResult, IEnumerable<WithdrawnBooksRecord>, IEnumerable<DeckWithdrawalRecord>) info) {
-            GameProgress += "\r\n" + GetCardRequestString(info.Item1);
-            GameProgress += GetDeckWithdrawalString(info.Item3);
-            GameProgress += GetBooksWithdrawnString(info.Item2);
+            UpdateGameProgress("\r\n" + GetCardRequestString(info.Item1));
+            UpdateGameProgress(GetDeckWithdrawalString(info.Item3));
+            UpdateGameProgress(GetBooksWithdrawnString(info.Item2));
             UseContext(_ =>
                 info.Item2
                     .ToList()
