@@ -76,7 +76,7 @@ namespace GoFish {
         public DelegateCommand Reset { get; }
         public AwaitableDelegateCommand PlayRound { get; }
         public ObservableCollection<WithdrawnBooksRecord> Books { get; } = new ObservableCollection<WithdrawnBooksRecord>();
-        int DealAmount { get; set; } = 5;
+        public int DealAmount { get; set; } = 5;
 
         public Card? SelectedCard {
             get => _selectedCard;
